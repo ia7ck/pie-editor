@@ -1,8 +1,9 @@
 #include "ox_toolkit.h"
 #include <stdio.h>
 
-// important!
+// ox_toolkit/oxf_old.c
 extern OXFILE *ox_start(char *, char *, char *);
+
 OXFILE *start(void) { return ox_start("localhost", "ox", "ox_asir"); }
 void execute_string(OXFILE *server, char *str) {
   ox_execute_string(server, str);
