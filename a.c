@@ -1,5 +1,5 @@
 #include "ox_toolkit.h"
-#include <string.h>
+#include <stdio.h>
 
 // important!
 extern OXFILE *ox_start(char *, char *, char *);
