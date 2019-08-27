@@ -2,7 +2,7 @@
 #include <string.h>
 
 // important!
-extern OXFILE *ox_start(char *host, char *prog1, char *prog2);
+extern OXFILE *ox_start(char *, char *, char *);
 OXFILE *start(void) { return ox_start("localhost", "ox", "ox_asir"); }
 void execute_string(OXFILE *server, char *str) {
   ox_execute_string(server, str);
