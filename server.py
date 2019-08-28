@@ -1,6 +1,6 @@
 import ctypes
 
-
+# OpenXM/src/ox_toolkit/ox_toolkit.h
 class StructTable(ctypes.Structure):
     _fields_ = [("tag", ctypes.c_int), ("flag", ctypes.c_int)]
 
