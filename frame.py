@@ -1,7 +1,7 @@
 import kivy.app
 import kivy.core.window
-import kivy.uix.button
 import kivy.uix.boxlayout
+import kivy.uix.button
 
 kivy.core.window.Window.clearcolor = (1, 1, 1, 1)
 
