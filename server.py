@@ -58,8 +58,8 @@ class Server:
     def start(self):
         self.server = self.lib.start()
 
-    def execute_string(self, command):
-        self.lib.execute_string(self.server, command.encode("utf-8"))
+    def execute_string(self, text):
+        self.lib.execute_string(self.server, text.encode("utf-8"))
 
     def pop_string(self):
         return self.lib.pop_string(self.server).decode("utf-8")
