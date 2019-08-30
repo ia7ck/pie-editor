@@ -59,13 +59,21 @@ class Server:
         self.server = self.lib.start()
 
     def execute_string(self, text):
+        self.ensure_server_started()
         self.lib.execute_string(self.server, text.encode("utf-8"))
 
     def pop_string(self):
+        self.ensure_server_started()
         return self.lib.pop_string(self.server).decode("utf-8")
 
     def shutdown(self):
+        self.ensure_server_started()
         self.lib.shutdown(self.server)
+        self.server = None
+
+    def ensure_server_started(self):
+        if self.server == None:
+            raise RuntimeError("Server seems not to start.")
 
 
 if __name__ == "__main__":
