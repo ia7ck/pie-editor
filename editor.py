@@ -1,10 +1,10 @@
 import kivy.app
+import kivy.config
+import kivy.core.text
 import kivy.core.window
 import kivy.uix.boxlayout
 import kivy.uix.button
 import kivy.uix.textinput
-import kivy.core.text
-import kivy.config
 
 kivy.core.window.Window.clearcolor = (1, 1, 1, 1)
 kivy.core.window.Window.size = (1920, 1020)
@@ -57,12 +57,12 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.add_widget(self.result)
 
 
-class Easier(kivy.app.App):
+class Pie(kivy.app.App):
     def build(self):
         self.editor = Editor()
         return self.editor
 
 
 if __name__ == "__main__":
-    app = Easier()
+    app = Pie()
     app.run()
