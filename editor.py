@@ -1,11 +1,14 @@
 import kivy.app
+import kivy.config
 import kivy.core.window
+import kivy.uix.codeinput
 import kivy.uix.boxlayout
 import kivy.uix.button
 import kivy.uix.textinput
 import kivy.uix.widget
 import server
-import kivy.config
+import lexer
+
 
 # 右クリックで丸が出るのを防ぐ
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
@@ -48,13 +51,21 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             font_size=FONT_SIZE,
         )
         self.editor.add_widget(self.line_number)
-        self.source_code = kivy.uix.textinput.TextInput(
-            text="""def f(A) {
+        self.source_code = kivy.uix.codeinput.CodeInput(
+            text="""/* comment */
+/* /* 入れ子 */ */
+if (0) {
+    car([]);
+    X2 = x_0 ^ 2;
+    Str = "string string";
+}
+def f(A) {
     return A * 2;
 }
 f(10) + f(100);""",
             cursor_width=3,
             cursor_color=(0.25, 0.25, 0.25, 1),
+            lexer=lexer.AsirLexer(),
             background_normal=kivy.uix.textinput.TextInput.background_active.defaultvalue,
             font_name=FONT_NAME,
             font_size=FONT_SIZE,
