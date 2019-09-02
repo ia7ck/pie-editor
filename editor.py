@@ -1,4 +1,5 @@
 import kivy.app
+import textwrap
 import kivy.config
 import kivy.core.window
 import kivy.uix.codeinput
@@ -21,22 +22,66 @@ FONT_NAME = "RictyDiminished-Regular.ttf"
 FONT_SIZE = 24
 
 
+class SourceCode(kivy.uix.codeinput.CodeInput):
+    def __init__(self, run_source_code):
+        super().__init__(
+            text=textwrap.dedent(
+                """\
+                /* comment */
+                /* /* 入れ子 */ */
+                if (0) {
+                    car([]);
+                    X2 = x_0 ^ 2;
+                }
+                def f(A) {
+                    return A * 2;
+                }
+                f(10) + f(100);
+                """
+            ),
+            cursor_width=3,
+            cursor_color=(0.25, 0.25, 0.25, 1),
+            lexer=lexer.AsirLexer(),
+            background_normal=kivy.uix.textinput.TextInput.background_active.defaultvalue,
+            font_name=FONT_NAME,
+            font_size=FONT_SIZE,
+        )
+        self.run_source_code = run_source_code
+        self.ctrl_down = False
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        if self.ctrl_down:
+            if "enter" in keycode[1]:
+                self.run_source_code()
+                return True
+        elif "ctrl" in keycode[1]:
+            self.ctrl_down = True
+        # 元々のメソッドを呼ぶ
+        kivy.uix.textinput.TextInput.keyboard_on_key_down(
+            self, window, keycode, text, modifiers
+        )
+
+    def keyboard_on_key_up(self, window, keycode):
+        if "ctrl" in keycode[1]:
+            self.ctrl_down = False
+        kivy.uix.textinput.TextInput.keyboard_on_key_up(self, window, keycode)
+
+
 class Editor(kivy.uix.boxlayout.BoxLayout):
     def __init__(self, **kwargs):
-        self.server = kwargs["lang_server"]
         super().__init__(orientation="vertical")
+        self.server = kwargs["lang_server"]
         # buttons
         self.buttons = kivy.uix.boxlayout.BoxLayout(
             size_hint_y=0.1, orientation="horizontal"
         )
-        self.buttons.add_widget(
-            kivy.uix.button.Button(
-                text="Run",
-                on_press=self.run_source,
-                font_name=FONT_NAME,
-                font_size=FONT_SIZE,
-            )
+        self.run_button = kivy.uix.button.Button(
+            text="Run",
+            on_press=self.run_source_code,
+            font_name=FONT_NAME,
+            font_size=FONT_SIZE,
         )
+        self.buttons.add_widget(self.run_button)
         self.add_widget(self.buttons)
         # main area
         self.editor = kivy.uix.boxlayout.BoxLayout(orientation="horizontal")
@@ -51,25 +96,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             font_size=FONT_SIZE,
         )
         self.editor.add_widget(self.line_number)
-        self.source_code = kivy.uix.codeinput.CodeInput(
-            text="""/* comment */
-/* /* 入れ子 */ */
-if (0) {
-    car([]);
-    X2 = x_0 ^ 2;
-    Str = "string string";
-}
-def f(A) {
-    return A * 2;
-}
-f(10) + f(100);""",
-            cursor_width=3,
-            cursor_color=(0.25, 0.25, 0.25, 1),
-            lexer=lexer.AsirLexer(),
-            background_normal=kivy.uix.textinput.TextInput.background_active.defaultvalue,
-            font_name=FONT_NAME,
-            font_size=FONT_SIZE,
-        )
+        self.source_code = SourceCode(run_source_code=self.run_source_code)
         self.editor.add_widget(self.source_code)
         self.add_widget(self.editor)
         # result text
@@ -100,7 +127,7 @@ f(10) + f(100);""",
         self.result.add_widget(self.result_text)
         self.add_widget(self.result)
 
-    def run_source(self, button):
+    def run_source_code(self, *args):  # self.run_button が渡される
         text = "if (1) { " + self.source_code.text + " };"
         self.server.execute_string(text)
         self.result_text.text = self.server.pop_string()
