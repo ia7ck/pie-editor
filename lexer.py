@@ -28,7 +28,7 @@ class AsirLexer(pygments.lexer.RegexLexer):
                     pygments.token.Punctuation,
                 ),
             ),
-            (r"[a-z][A-Za-z0-9_]*", pygments.token.Name.Constant),
+            (r"[a-z][A-Za-z0-9_]*", pygments.token.Name.Constant),  # 不定元
             (r"[0-9]+", pygments.token.Literal.Number),
         ],
         "comment": [
