@@ -1,4 +1,6 @@
 import kivy.app
+
+import textwrap
 import kivy.config
 import kivy.core.window
 import kivy.uix.codeinput
@@ -7,9 +9,9 @@ import kivy.uix.button
 import kivy.uix.textinput
 import kivy.uix.label
 
-import textwrap
 import server
 import lexer
+import scanner
 
 # 右クリックで丸が出るのを防ぐ
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
@@ -110,10 +112,28 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
         self.on_cursor_move(self.cursor_row + 1, self.cursor_col + 1)
         return False  # not to stop dispatching touch event
 
+    def select_error_line(self, error_line_num):
+        if error_line_num == -1:
+            return
+        lines = self.text.splitlines()
+        if len(lines) < error_line_num:
+            return
+        start = sum([len(line) + 1 for line in lines[: error_line_num - 1]]) - 1
+        end = sum([len(line) + 1 for line in lines[:error_line_num]]) - 1
+        self.focus = False
+        self.select_text(start=start, end=end)
+
 
 class Footer(kivy.uix.boxlayout.BoxLayout):
     def __init__(self, **kwargs):
         super(Footer, self).__init__(orientation="horizontal", **kwargs)
+        self.error_line = LabelWithBackgroundColor(
+            background_color=(0.9, 0.9, 0.9, 1),
+            color=(0.8, 0, 0, 1),
+            text="",
+            halign="left",
+            valign="middle",
+        )
         self.line_col = LabelWithBackgroundColor(
             background_color=(0.9, 0.9, 0.9, 1),
             color=(0, 0, 0, 1),
@@ -122,10 +142,18 @@ class Footer(kivy.uix.boxlayout.BoxLayout):
             valign="middle",
         )
         self.line_col.bind(size=self.line_col.setter("text_size"))  # alginment のため
+        self.error_line.bind(size=self.error_line.setter("text_size"))
+        self.add_widget(self.error_line)
         self.add_widget(self.line_col)
 
     def update_line_col_from_cursor(self, new_line, new_col):
-        self.line_col.text = "Line:{} Col:{}".format(new_line, new_col)
+        self.line_col.text = "Line:{} Col:{} ".format(new_line, new_col)
+
+    def update_error_line(self, error_line_num):
+        if error_line_num == -1:
+            self.error_line.text = ""
+        else:
+            self.error_line.text = " Error at Line {}".format(error_line_num)
 
 
 class RunResult(kivy.uix.boxlayout.BoxLayout):
@@ -186,6 +214,9 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.server.execute_string(text)
         response = self.server.pop_string()
         self.result.update_output(response)
+        error_line_num = scanner.get_error_line(response)
+        self.footer.update_error_line(error_line_num)
+        self.source_code.select_error_line(error_line_num)
 
 
 class Pie(kivy.app.App):
