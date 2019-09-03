@@ -1,17 +1,16 @@
-import kivy.app
-
 import textwrap
+
+import kivy.app
 import kivy.config
 import kivy.core.window
-import kivy.uix.codeinput
 import kivy.uix.boxlayout
 import kivy.uix.button
-import kivy.uix.textinput
+import kivy.uix.codeinput
 import kivy.uix.label
-
-import server
+import kivy.uix.textinput
 import lexer
 import scanner
+import server
 
 # 右クリックで丸が出るのを防ぐ
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
@@ -221,7 +220,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
 class Pie(kivy.app.App):
     def __init__(self, **kwargs):
-        super().__init__()
+        super(Pie, self).__init__()
         self.kwargs = kwargs
 
     def build(self):
