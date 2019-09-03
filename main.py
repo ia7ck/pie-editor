@@ -8,6 +8,7 @@ import kivy.uix.button
 import kivy.uix.codeinput
 import kivy.uix.label
 import kivy.uix.textinput
+
 import lexer
 import scanner
 import server
@@ -86,26 +87,19 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
         )
         self.on_ctrl_enter = on_ctrl_enter
         self.on_cursor_move = on_cursor_move
-        self.ctrl_down = False
 
-    def keyboard_on_key_down(self, _window, keycode, _text, _modifiers):
-        if self.ctrl_down and ("enter" in keycode[1]):
+    def keyboard_on_key_down(self, _window, keycode, _text, modifiers):
+        if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "enter":
             self.on_ctrl_enter()
             return True
-        if "ctrl" in keycode[1]:
-            self.ctrl_down = True
-        # call classmethod to edit source code properly
-        kivy.uix.textinput.TextInput.keyboard_on_key_down(
-            self, _window, keycode, _text, _modifiers
-        )
-
-    def keyboard_on_key_up(self, _window, keycode):
         self.on_cursor_move(
             self.cursor_row + 1, self.cursor_col + 1
         )  # send new cursor position (line, col)
-        if "ctrl" in keycode[1]:
-            self.ctrl_down = False
-        kivy.uix.textinput.TextInput.keyboard_on_key_up(self, _window, keycode)
+
+        # call classmethod to edit source code properly
+        kivy.uix.textinput.TextInput.keyboard_on_key_down(
+            self, _window, keycode, _text, modifiers
+        )
 
     def _on_touch_up(self, _touched_object, _touch):
         self.on_cursor_move(self.cursor_row + 1, self.cursor_col + 1)
