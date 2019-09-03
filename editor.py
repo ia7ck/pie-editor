@@ -1,14 +1,11 @@
 import kivy.app
-import kivy.uix.scrollview
 import kivy.config
 import kivy.core.window
 import kivy.uix.codeinput
 import kivy.uix.boxlayout
 import kivy.uix.button
 import kivy.uix.textinput
-import kivy.uix.widget
 import kivy.uix.label
-import kivy.uix.anchorlayout
 
 import textwrap
 import server
@@ -118,58 +115,36 @@ class Footer(kivy.uix.boxlayout.BoxLayout):
     def __init__(self, **kwargs):
         super(Footer, self).__init__(orientation="horizontal", **kwargs)
         self.line_col = LabelWithBackgroundColor(
-            background_color=(0.92, 0.9, 0.9, 1),
+            background_color=(0.9, 0.9, 0.9, 1),
             color=(0, 0, 0, 1),
-            text="Line:1 Col:1",
+            text="Line:1 Col:1 ",
             halign="right",
             valign="middle",
         )
-        self.line_col.bind(size=self.line_col.setter("text_size"))  # algin を有効にするため
+        self.line_col.bind(size=self.line_col.setter("text_size"))  # alginment のため
         self.add_widget(self.line_col)
 
-
-class Editor(kivy.uix.boxlayout.BoxLayout):
     def update_line_col_from_cursor(self, new_line, new_col):
-        self.footer.line_col.text = "Line:{} Col:{}".format(new_line, new_col)
+        self.line_col.text = "Line:{} Col:{}".format(new_line, new_col)
 
+
+class RunResult(kivy.uix.boxlayout.BoxLayout):
     def __init__(self, **kwargs):
-        super(Editor, self).__init__(orientation="vertical")
-        self.server = kwargs["lang_server"]
-        # file, run_button, line, col
-        self.header = Header(on_button_press=self.run_source_code)
-        self.add_widget(self.header)
-        # editor
-        self.editor = kivy.uix.boxlayout.BoxLayout(orientation="horizontal")
-        # TODO: line_number
-        # source_code
-        self.source_code = SourceCode(
-            on_ctrl_enter=self.run_source_code,
-            on_cursor_move=self.update_line_col_from_cursor,
-        )
-        self.editor.add_widget(self.source_code)
-        self.add_widget(self.editor)
-        self.footer = Footer(size_hint_y=None, height=FONT_SIZE * 1.5)
-        self.add_widget(self.footer)
-        # result text
-        self.result = kivy.uix.boxlayout.BoxLayout(
-            size_hint_y=0.4, orientation="vertical"
-        )
-        self.result_label = LabelWithBackgroundColor(
+        super(RunResult, self).__init__(**kwargs)
+        self.label = LabelWithBackgroundColor(
             background_color=(0.3, 0.3, 0.3, 1),
-            text=" Result (read only)",
+            text=" Output (read only)",
             halign="left",
             valign="middle",
             color=(1, 1, 1, 1),
         )
-        self.result_label.bind(
-            size=self.result_label.setter("text_size")
-        )  # alignment のため
-        self.result_label_layout = kivy.uix.boxlayout.BoxLayout(
+        self.label.bind(size=self.label.setter("text_size"))  # alignment のため
+        self.label_layout = kivy.uix.boxlayout.BoxLayout(
             size_hint_y=None, height=FONT_SIZE * 1.5
         )  # height 指定のため
-        self.result_label_layout.add_widget(self.result_label)
-        self.result.add_widget(self.result_label_layout)
-        self.result_text = kivy.uix.textinput.TextInput(
+        self.label_layout.add_widget(self.label)
+        self.add_widget(self.label_layout)
+        self.output = kivy.uix.textinput.TextInput(
             text="",
             readonly=True,
             cursor_width=0,
@@ -178,13 +153,39 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             font_name=FONT_NAME,
             font_size=FONT_SIZE,
         )
-        self.result.add_widget(self.result_text)
+        self.add_widget(self.output)
+
+    def update_output(self, response):
+        self.output.text = response
+
+
+class Editor(kivy.uix.boxlayout.BoxLayout):
+    def __init__(self, **kwargs):
+        super(Editor, self).__init__(orientation="vertical")
+        self.server = kwargs["lang_server"]
+        # run_button, TODO: file
+        self.header = Header(on_button_press=self.run_source_code)
+        self.footer = Footer(size_hint_y=None, height=FONT_SIZE * 1.5)
+        self.add_widget(self.header)
+        # source code, TODO: line_number
+        self.editor = kivy.uix.boxlayout.BoxLayout(orientation="horizontal")
+        self.source_code = SourceCode(
+            on_ctrl_enter=self.run_source_code,
+            on_cursor_move=self.footer.update_line_col_from_cursor,
+        )
+        self.editor.add_widget(self.source_code)
+        self.add_widget(self.editor)
+        # line/column number
+        self.add_widget(self.footer)
+        # label, output
+        self.result = RunResult(size_hint_y=0.4, orientation="vertical")
         self.add_widget(self.result)
 
-    def run_source_code(self, *args):  # self.run_button が渡される
+    def run_source_code(self, *args):  # run_button が渡される
         text = "if (1) { " + self.source_code.text + " };"
         self.server.execute_string(text)
-        self.result_text.text = self.server.pop_string()
+        response = self.server.pop_string()
+        self.result.update_output(response)
 
 
 class Pie(kivy.app.App):
