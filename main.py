@@ -103,7 +103,6 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
 
     def _on_touch_up(self, _touched_object, _touch):
         self.on_cursor_move(self.cursor_row + 1, self.cursor_col + 1)
-        return False  # not to stop dispatching touch event
 
     def select_error_line(self, error_line_num):
         if error_line_num == -1:
