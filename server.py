@@ -73,7 +73,7 @@ class Server:
 
     def ensure_server_started(self):
         if self.server == None:
-            raise RuntimeError("Server seems not to start.")
+            raise RuntimeError("The server seems not to start.")
 
 
 if __name__ == "__main__":
