@@ -187,9 +187,11 @@ class RunResult(kivy.uix.boxlayout.BoxLayout):
 
 
 class Editor(kivy.uix.boxlayout.BoxLayout):
-    def __init__(self, **kwargs):
+    def __init__(self):
         super(Editor, self).__init__(orientation="vertical")
-        self.server = kwargs["lang_server"]
+
+        self.server = None
+
         # run_button, TODO: file
         self.header = Header(on_button_press=self.run_source_code)
         self.footer = Footer(size_hint_y=None, height=FONT_SIZE * 1.5)
@@ -219,18 +221,18 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
 
 class Pie(kivy.app.App):
-    def __init__(self, **kwargs):
+    def __init__(self):
         super(Pie, self).__init__()
-        self.kwargs = kwargs
+        self.editor = Editor()
 
     def build(self):
-        self.editor = Editor(**self.kwargs)
         return self.editor
 
 
 if __name__ == "__main__":
+    app = Pie()
     asir_server = server.Server()
     asir_server.start()
-    app = Pie(lang_server=asir_server)
+    app.editor.server = asir_server
     app.run()
     asir_server.shutdown()
