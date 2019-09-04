@@ -1,20 +1,21 @@
 import pygments.lexer
 import pygments.token
 
+
 # http://www.math.kobe-u.ac.jp/Asir/cfep/html-ja_JP.utf8/html-ja/man_23.html#SEC23
 class AsirLexer(pygments.lexer.RegexLexer):
     tokens = {
         "root": [
             (
-                r"(break|continue|do|else|extern|for|if|return|static|struct|while)",
+                r"\b(break|continue|do|else|extern|for|if|return|static|struct|while)\b",  # \b は fore とかにマッチしないために必要
                 pygments.token.Keyword,
             ),
             (
-                r"(def|endmodule|function|global|local|localf|module)",
+                r"\b(def|endmodule|function|global|local|localf|module)\b",
                 pygments.token.Keyword,
             ),
             (
-                r"(car|cdr|getopt|newstruct|map|pari|quote|recmap|timer)",
+                r"\b(car|cdr|getopt|newstruct|map|pari|quote|recmap|timer)\b",
                 pygments.token.Name.Builtin,
             ),
             (r"/\*", pygments.token.Comment.Multiline, "comment"),
@@ -33,7 +34,7 @@ class AsirLexer(pygments.lexer.RegexLexer):
         ],
         "comment": [
             (r"[^\*/]", pygments.token.Comment.Multiline),
-            (r"\*/", pygments.token.Comment.Multiline, "#pop"),
+            (r"\*/", pygments.token.Comment.Multiline, "#pop"),  # 入れ子は無し
             (r"[\*/]", pygments.token.Comment.Multiline),
         ],
         "string": [
