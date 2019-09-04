@@ -29,14 +29,20 @@
   height: FONT_SIZE * 2
   run_button: run_button
   is_run_button_downed: self.run_button.state == "down"
+  editor: root.parent.parent
+  Button:
+    id: file_open_button
+    text: "Open File"
+    always_release: True
+    font_name: FONT_NAME
+    font_size: FONT_SIZE
   Button:
     id: run_button
     text: "Run"
     always_release: True  # 長押し無し
     font_name: FONT_NAME
     font_size: FONT_SIZE
-    editor: root.parent.parent
-    on_press: self.editor.run_source_code()
+    on_release: root.editor.run_source_code()
 
 <SourceCode>:
   text: "def f() { g(); } f();"
