@@ -1,0 +1,110 @@
+#:import lexer lexer
+#:import textinput kivy.uix.textinput
+
+#:set FONT_NAME "RictyDiminished-Regular.ttf"
+#:set FONT_SIZE 24
+
+<Editor>:
+  id: editor
+  header: header
+  source_code: source_code
+  footer: footer
+  result: result
+  BoxLayout:
+    orientation: "vertical"
+    size: root.size
+    Header:
+      id: header
+    BoxLayout:
+      SourceCode:
+        id: source_code
+    Footer:
+      id: footer
+    Result:
+      id: result
+
+<Header>:
+  orientation: "horizontal"
+  size_hint_y: None
+  height: FONT_SIZE * 2
+  run_button: run_button
+  is_run_button_downed: self.run_button.state == "down"
+  Button:
+    id: run_button
+    text: "Run"
+    always_release: True  # 長押し無し
+    font_name: FONT_NAME
+    font_size: FONT_SIZE
+    editor: root.parent.parent
+    on_press: self.editor.run_source_code()
+
+<SourceCode>:
+  text: "def f() { g(); } f();"
+  cursor_width: 3
+  cursor_color: (0.25, 0.25, 0.25, 1)
+  cursor_blink: False
+  lexer: lexer.AsirLexer()  # for syntax highlighting
+  background_normal: textinput.TextInput.background_active.defaultvalue  # light background color
+  auto_indent: True  #  効かない??
+  editor: root.parent.parent.parent
+  on_touch_up: self.editor.footer.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1) 
+  font_name: FONT_NAME
+  font_size: FONT_SIZE
+
+<Footer>:
+  orientation: "horizontal"
+  size_hint_y: None
+  height: FONT_SIZE * 1.5
+  LabelWithBackgroundColor:
+    id: error_line
+    text: root.error_line_text
+    background_color: (0.9, 0.9, 0.9, 1)
+    color: (0.8, 0, 0, 1)
+    text_size: self.size
+    halign: "left"
+    valign: "middle"
+  LabelWithBackgroundColor:
+    id: line_col
+    editor: root.parent.parent
+    text: root.line_col_text
+    background_color: (0.9, 0.9, 0.9, 1)
+    color: (0, 0, 0, 1)
+    text_size: self.size
+    halign: "right"
+    valign: "middle"
+
+<Result>:
+  orientation: "vertical"
+  BoxLayout:
+    id: label
+    size_hint_y: None
+    height: FONT_SIZE * 1.5
+    LabelWithBackgroundColor:
+      text: " Output (read only)"
+      background_color: (0.3, 0.3, 0.3, 1)
+      color: (1, 1, 1, 1)
+      text_size: self.size
+      halign: "left"
+      valign: "middle"
+  TextInput:
+    id: output
+    text: root.output_text
+    readonly: True
+    cursor_width: 0
+    background_color: (0.1, 0.1, 0.1, 1)
+    foreground_color: (1, 1, 1, 1)
+    font_name: FONT_NAME
+    font_size: FONT_SIZE
+
+<LabelWithBackgroundColor>:
+  font_name: FONT_NAME
+  font_size: FONT_SIZE
+  canvas.before:
+    Color:
+      rgba: self.background_color
+    Rectangle:
+      pos: self.pos
+      size: self.size
+
+Editor:
+
