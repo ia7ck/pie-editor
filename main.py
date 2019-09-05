@@ -94,13 +94,15 @@ class Pie(kivy.app.App):
         self.server = server.Server()
 
     def build(self):
-        self.editor = Editor()
+        self.editor = Editor()  # ここで作る
         return self.editor
 
     def on_start(self):
+        return
         self.server.start()
 
     def on_stop(self):
+        return
         self.server.shutdown()
 
 
