@@ -5,6 +5,7 @@
 #:set FONT_SIZE 24
 
 <Editor>:
+  app: app
   id: editor
   header: header
   source_code: source_code
@@ -18,10 +19,14 @@
     BoxLayout:
       SourceCode:
         id: source_code
-    Footer:
-      id: footer
-    Result:
-      id: result
+    Splitter:
+      sizable_from: "top"
+      BoxLayout:
+        orientation: "vertical"
+        Result:
+          id: result
+        Footer:
+          id: footer
 
 <Header>:
   orientation: "horizontal"
@@ -52,37 +57,15 @@
   lexer: lexer.AsirLexer()  # for syntax highlighting
   background_normal: textinput.TextInput.background_active.defaultvalue  # light background color
   auto_indent: True  #  効かない??
-  editor: root.parent.parent.parent
-  on_touch_up: self.editor.footer.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1) 
   font_name: FONT_NAME
   font_size: FONT_SIZE
-
-<Footer>:
-  orientation: "horizontal"
-  size_hint_y: None
-  height: FONT_SIZE * 1.5
-  LabelWithBackgroundColor:
-    id: error_line
-    text: root.error_line_text
-    background_color: (0.9, 0.9, 0.9, 1)
-    color: (0.8, 0, 0, 1)
-    text_size: self.size
-    halign: "left"
-    valign: "middle"
-  LabelWithBackgroundColor:
-    id: line_col
-    editor: root.parent.parent
-    text: root.line_col_text
-    background_color: (0.9, 0.9, 0.9, 1)
-    color: (0, 0, 0, 1)
-    text_size: self.size
-    halign: "right"
-    valign: "middle"
+  editor: root.parent.parent.parent
 
 <Result>:
   orientation: "vertical"
   BoxLayout:
     id: label
+    orientation: "vertical"
     size_hint_y: None
     height: FONT_SIZE * 1.5
     LabelWithBackgroundColor:
@@ -102,6 +85,27 @@
     font_name: FONT_NAME
     font_size: FONT_SIZE
 
+<Footer>:
+  orientation: "horizontal"
+  size_hint_y: None
+  height: FONT_SIZE * 1.5
+  LabelWithBackgroundColor:
+    id: error_line
+    text: root.error_line_text
+    background_color: (0.9, 0.9, 0.9, 1)
+    color: (0.8, 0, 0, 1)
+    text_size: self.size
+    halign: "left"
+    valign: "middle"
+  LabelWithBackgroundColor:
+    id: line_col
+    text: root.line_col_text
+    background_color: (0.9, 0.9, 0.9, 1)
+    color: (0, 0, 0, 1)
+    text_size: self.size
+    halign: "right"
+    valign: "middle"
+
 <LabelWithBackgroundColor>:
   font_name: FONT_NAME
   font_size: FONT_SIZE
@@ -112,5 +116,4 @@
       pos: self.pos
       size: self.size
 
-Editor:
 

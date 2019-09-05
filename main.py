@@ -11,8 +11,6 @@ import kivy.uix.label
 import scanner
 import server
 
-server = server.Server()
-
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")
 # kivy.core.window.Window.size = (1920, 1020)  # 適当に大きめに設定しておく
@@ -51,8 +49,12 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             self, _window, keycode, _text, modifiers
         )
 
-    def f(self, *args):
-        print(args)
+
+class Result(kivy.uix.boxlayout.BoxLayout):
+    output_text = kivy.properties.StringProperty("")
+
+    def update_output(self, new_text):
+        self.output_text = new_text
 
 
 class Footer(kivy.uix.boxlayout.BoxLayout):
@@ -69,13 +71,6 @@ class Footer(kivy.uix.boxlayout.BoxLayout):
         self.line_col_text = "Line:{} Col:{} ".format(new_line, new_col)
 
 
-class Result(kivy.uix.boxlayout.BoxLayout):
-    output_text = kivy.properties.StringProperty("")
-
-    def update_output(self, new_text):
-        self.output_text = new_text
-
-
 class Editor(kivy.uix.boxlayout.BoxLayout):
     header = kivy.properties.ObjectProperty(None)
     source_code = kivy.properties.ObjectProperty(None)
@@ -84,8 +79,8 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
     def run_source_code(self, *args):
         server_input = "if (1) { " + self.source_code.text + " };"
-        server.execute_string(server_input)
-        server_output = server.pop_string()
+        app.server.execute_string(server_input)
+        server_output = app.server.pop_string()
         self.result.update_output(server_output)
         error_line_num = scanner.get_error_line(server_output)
         self.footer.update_error_line(error_line_num)
@@ -93,11 +88,22 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
 
 class Pie(kivy.app.App):
-    pass
+    def __init__(self):
+        super(Pie, self).__init__()
+        self.editor = None
+        self.server = server.Server()
+
+    def build(self):
+        self.editor = Editor()
+        return self.editor
+
+    def on_start(self):
+        self.server.start()
+
+    def on_stop(self):
+        self.server.shutdown()
 
 
 if __name__ == "__main__":
     app = Pie()
-    server.start()
     app.run()
-    server.shutdown()
