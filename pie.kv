@@ -1,5 +1,7 @@
 #:import lexer lexer
 #:import textinput kivy.uix.textinput
+#:import os os
+#:import datetime datetime
 
 #:set FONT_NAME "RictyDiminished-Regular.ttf"
 #:set FONT_SIZE 24
@@ -16,9 +18,15 @@
     size: root.size
     Header:
       id: header
+      show_files: root.show_files
+      show_filename_form: root.show_filename_form
+      run_source_code: root.run_source_code
     BoxLayout:
       SourceCode:
         id: source_code
+        is_run_button_downed: root.header.is_run_button_downed
+        run_source_code: root.run_source_code
+        update_line_col_from_cursor: root.footer.update_line_col_from_cursor
     Splitter:
       sizable_from: "top"
       keep_within_parent: True
@@ -34,21 +42,22 @@
   size_hint_y: None
   height: FONT_SIZE * 2
   run_button: run_button
-  is_run_button_downed: self.run_button.state == "down"
-  editor: root.parent.parent
+  is_run_button_downed: root.run_button.state == "down"
   Button:
     id: file_open_button
     text: "Open File"
     always_release: True
-    font_name: FONT_NAME
-    font_size: FONT_SIZE
+    on_release: root.show_files()
+  Button:
+    id: save_button
+    text: "Save"
+    always_release: True
+    on_release: root.show_filename_form()
   Button:
     id: run_button
     text: "Run"
     always_release: True  # 長押し無し
-    font_name: FONT_NAME
-    font_size: FONT_SIZE
-    on_release: root.editor.run_source_code()
+    on_release: root.run_source_code()
 
 <SourceCode>:
   text: "def f() { g(); } f();"
@@ -60,10 +69,10 @@
   auto_indent: True  #  効かない??
   font_name: FONT_NAME
   font_size: FONT_SIZE
-  editor: root.parent.parent.parent
 
 <Result>:
   orientation: "vertical"
+  output: output
   BoxLayout:
     id: label
     orientation: "vertical"
@@ -78,7 +87,7 @@
       valign: "middle"
   TextInput:
     id: output
-    text: root.output_text
+    text: ""
     readonly: True
     cursor_width: 0
     background_color: (0.1, 0.1, 0.1, 1)
@@ -90,9 +99,11 @@
   orientation: "horizontal"
   size_hint_y: None
   height: FONT_SIZE * 1.5
+  error_line: error_line
+  line_col: line_col
   LabelWithBackgroundColor:
     id: error_line
-    text: root.error_line_text
+    text: ""
     background_color: (0.9, 0.9, 0.9, 1)
     color: (0.8, 0, 0, 1)
     text_size: self.size
@@ -100,7 +111,7 @@
     valign: "middle"
   LabelWithBackgroundColor:
     id: line_col
-    text: root.line_col_text
+    text: "Line:1 Col:1 "
     background_color: (0.9, 0.9, 0.9, 1)
     color: (0, 0, 0, 1)
     text_size: self.size
@@ -108,8 +119,6 @@
     valign: "middle"
 
 <LabelWithBackgroundColor>:
-  font_name: FONT_NAME
-  font_size: FONT_SIZE
   canvas.before:
     Color:
       rgba: self.background_color
@@ -117,4 +126,63 @@
       pos: self.pos
       size: self.size
 
+<FileOpenDialog>:
+  orientation: "vertical"
+  FileChooserListView:
+    id: filechooser
+    title: "Open File"
+    rootpath: os.getcwd()
+    # filters: ""
+  BoxLayout:
+    size_hint_y: None
+    height: FONT_SIZE * 2
+    orientation: "horizontal"
+    Button:
+      text: "Cancel"
+      on_release: root.cancel()
+    Button:
+      text: "Open"
+      on_release: root.load_file(filechooser.selection)
 
+<FileSaveDialog>:
+  orientation: "vertical"
+  error_hint: error_hint
+  save_button: save_button
+  TextInput:
+    id: filename
+    text: "script_{}_.rr".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    size_hint_y: None
+    height: FONT_SIZE * 2
+    multiline: False
+    on_text_validate: root.save_file(filename.text)
+    font_name: FONT_NAME
+    font_size: FONT_SIZE
+    cursor_width: 3
+    cursor_color: (0.25, 0.25, 0.25, 1)
+    cursor_blink: False
+  BoxLayout
+    size_hint_y: None
+    height: FONT_SIZE * 2
+    orientation: "horizontal"
+    Button:
+      text: "Cancel"
+      on_release: root.cancel()
+    Button:
+      id: save_button
+      text: "Save"
+      on_release: root.save_file(filename.text)
+  Label:
+    id: error_hint
+    text: ""
+    markup: True
+    halign: "left"
+    valign: "middle"
+    text_size: self.size
+
+# 上書きしている
+<Label>:
+  font_name: FONT_NAME
+  font_size: FONT_SIZE
+<Popup>:
+  title_font: FONT_NAME
+  title_size: FONT_SIZE
