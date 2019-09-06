@@ -64,6 +64,9 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             self, _window, keycode, _text, modifiers
         )
 
+    def keyboard_on_key_up(self, _window, _keycode):
+        self.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
+
     def update_source_code(self, new_text):
         self.text = new_text
 

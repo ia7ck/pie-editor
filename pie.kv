@@ -68,6 +68,7 @@
   lexer: lexer.AsirLexer()  # for syntax highlighting
   background_normal: textinput.TextInput.background_active.defaultvalue  # light background color
   auto_indent: True  #  効かない??
+  on_touch_up: self.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
 
 <Result>:
   orientation: "vertical"
