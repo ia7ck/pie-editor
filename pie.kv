@@ -3,8 +3,9 @@
 #:import os os
 #:import datetime datetime
 
-#:set FONT_NAME "RictyDiminished-Regular.ttf"
-#:set FONT_SIZE 24
+#:set LABEL_FONT_SIZE 20
+#:set TITLE_FONT_SIZE 24
+#:set CODE_FONT_SIZE 26
 
 <Editor>:
   app: app
@@ -40,7 +41,7 @@
 <Header>:
   orientation: "horizontal"
   size_hint_y: None
-  height: FONT_SIZE * 2
+  height: LABEL_FONT_SIZE * 2
   run_button: run_button
   is_run_button_downed: root.run_button.state == "down"
   Button:
@@ -67,8 +68,6 @@
   lexer: lexer.AsirLexer()  # for syntax highlighting
   background_normal: textinput.TextInput.background_active.defaultvalue  # light background color
   auto_indent: True  #  効かない??
-  font_name: FONT_NAME
-  font_size: FONT_SIZE
 
 <Result>:
   orientation: "vertical"
@@ -77,7 +76,7 @@
     id: label
     orientation: "vertical"
     size_hint_y: None
-    height: FONT_SIZE * 1.5
+    height: LABEL_FONT_SIZE * 2
     LabelWithBackgroundColor:
       text: " Output (read only)"
       background_color: (0.3, 0.3, 0.3, 1)
@@ -92,13 +91,11 @@
     cursor_width: 0
     background_color: (0.1, 0.1, 0.1, 1)
     foreground_color: (1, 1, 1, 1)
-    font_name: FONT_NAME
-    font_size: FONT_SIZE
 
 <Footer>:
   orientation: "horizontal"
   size_hint_y: None
-  height: FONT_SIZE * 1.5
+  height: LABEL_FONT_SIZE * 2
   error_line: error_line
   line_col: line_col
   LabelWithBackgroundColor:
@@ -135,7 +132,7 @@
     # filters: ""
   BoxLayout:
     size_hint_y: None
-    height: FONT_SIZE * 2
+    height: LABEL_FONT_SIZE * 2
     orientation: "horizontal"
     Button:
       text: "Cancel"
@@ -152,17 +149,15 @@
     id: filename
     text: "script_{}_.rr".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     size_hint_y: None
-    height: FONT_SIZE * 2
+    height: CODE_FONT_SIZE * 2
     multiline: False
     on_text_validate: root.save_file(filename.text)
-    font_name: FONT_NAME
-    font_size: FONT_SIZE
     cursor_width: 3
     cursor_color: (0.25, 0.25, 0.25, 1)
     cursor_blink: False
   BoxLayout
     size_hint_y: None
-    height: FONT_SIZE * 2
+    height: LABEL_FONT_SIZE * 2
     orientation: "horizontal"
     Button:
       text: "Cancel"
@@ -181,8 +176,11 @@
 
 # 上書きしている
 <Label>:
-  font_name: FONT_NAME
-  font_size: FONT_SIZE
+  font_name: "M+ P Type-1 Regular"
+  font_size: LABEL_FONT_SIZE
 <Popup>:
-  title_font: FONT_NAME
-  title_size: FONT_SIZE
+  title_font: "M+ P Type-1 Regular"
+  title_size: TITLE_FONT_SIZE
+<TextInput>:
+  font_name: "M+ M Type-1 Regular"
+  font_size: CODE_FONT_SIZE

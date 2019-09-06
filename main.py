@@ -1,6 +1,7 @@
 import os
 
 import kivy.app
+import kivy.core.text
 import kivy.core.window
 import kivy.graphics
 import kivy.properties
@@ -16,8 +17,10 @@ import server
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")
 # kivy.core.window.Window.size = (1920, 1020)  # 適当に大きめに設定しておく
+kivy.core.text.LabelBase.register("M+ P Type-1 Regular", "./mplus-1p-regular.ttf")
+kivy.core.text.LabelBase.register("M+ M Type-1 Regular", "./mplus-1m-regular.ttf")
 
-FONT_SIZE = 24
+FONT_SIZE = 24  # LABEL_FONT_SIZE in pie.kv
 
 
 class FileOpenDialog(kivy.uix.boxlayout.BoxLayout):
