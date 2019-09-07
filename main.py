@@ -38,7 +38,11 @@ class LabelWithBackgroundColor(kivy.uix.label.Label):
 
 
 class Header(kivy.uix.boxlayout.BoxLayout):
-    pass
+    def on_save_button_released(self):
+        if self.editor.has_file_created():
+            self.editor.save_file(self.editor.get_filename())
+        else:
+            self.editor.show_filename_input_form()
 
 
 class SourceCode(kivy.uix.codeinput.CodeInput):
@@ -67,15 +71,9 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
     def keyboard_on_key_up(self, _window, _keycode):
         self.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
 
-    def update_source_code(self, new_text):
-        self.text = new_text
-
 
 class Result(kivy.uix.boxlayout.BoxLayout):
     output = kivy.properties.ObjectProperty(None)
-
-    def update_output(self, new_text):
-        self.output.text = new_text
 
 
 class Footer(kivy.uix.boxlayout.BoxLayout):
@@ -86,10 +84,10 @@ class Footer(kivy.uix.boxlayout.BoxLayout):
         if error_line_num == -1:
             self.error_line.text = ""
         else:
-            self.error_line.text = " Error at Line {}".format(error_line_num)
+            self.error_line.text = "Error at Line {}".format(error_line_num)
 
     def update_line_col_from_cursor(self, new_line, new_col):
-        self.line_col.text = "Line:{} Col:{} ".format(new_line, new_col)
+        self.line_col.text = "Line:{} Col:{}".format(new_line, new_col)
 
 
 class Editor(kivy.uix.boxlayout.BoxLayout):
@@ -97,12 +95,13 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     source_code = kivy.properties.ObjectProperty(None)
     footer = kivy.properties.ObjectProperty(None)
     result = kivy.properties.ObjectProperty(None)
+    filepath = kivy.properties.StringProperty("")
 
     def run_source_code(self, *args):
         server_input = "if (1) { " + self.source_code.text + " };"
         app.server.execute_string(server_input)
         server_output = app.server.pop_string()
-        self.result.update_output(server_output)
+        self.result.output.text = server_output
         error_line_num = scanner.get_error_line(server_output)
         self.footer.update_error_line(error_line_num)
         self.source_code.select_error_line(error_line_num)
@@ -115,14 +114,15 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         )
         self.popup.open()
 
-    def load_file(self, filenames):
-        if len(filenames) == 0:
+    def load_file(self, filepaths):
+        if len(filepaths) == 0:
             return
-        with open(filenames[0]) as f:
-            self.source_code.update_source_code(f.read())
+        with open(filepaths[0]) as f:
+            self.source_code.text = f.read()
+        self.filepath = filepaths[0]
         self.dismiss_popup()
 
-    def show_filename_form(self):
+    def show_filename_input_form(self):
         self.popup = kivy.uix.popup.Popup(
             title="Save File",
             size_hint=(0.8, None),
@@ -132,10 +132,15 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.popup.open()
 
     def save_file(self, filename):
-        filepath = os.path.join(os.getcwd(), filename)
+        filepath = (
+            self.filepath  # 上書き
+            if self.has_file_created()
+            else os.path.join(os.getcwd(), filename)  # 新規作成
+        )
         try:
             with open(filepath, "w") as f:
                 f.write(self.source_code.text)
+            self.filepath = filepath
             self.dismiss_popup()
         except OSError as e:
             self.show_save_error(filepath, e.strerror)
@@ -148,6 +153,16 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
     def dismiss_popup(self):
         self.popup.dismiss()
+
+    def has_file_created(self):
+        return len(self.filepath) > 0
+
+    def get_filename(self):
+        return os.path.basename(self.filepath)
+
+    def on_filepath(self, *args):
+        app.title = "Pie -- " + self.filepath
+        self.footer.filename.text = self.get_filename()
 
 
 class Pie(kivy.app.App):

@@ -14,14 +14,13 @@
   source_code: source_code
   footer: footer
   result: result
+  filepath: ""
   BoxLayout:
     orientation: "vertical"
     size: root.size
     Header:
       id: header
-      show_files: root.show_files
-      show_filename_form: root.show_filename_form
-      run_source_code: root.run_source_code
+      editor: editor
     BoxLayout:
       SourceCode:
         id: source_code
@@ -48,17 +47,17 @@
     id: file_open_button
     text: "Open File"
     always_release: True
-    on_release: root.show_files()
+    on_release: root.editor.show_files()
   Button:
     id: save_button
     text: "Save"
     always_release: True
-    on_release: root.show_filename_form()
+    on_release: root.on_save_button_released()
   Button:
     id: run_button
     text: "Run"
     always_release: True  # 長押し無し
-    on_release: root.run_source_code()
+    on_release: root.editor.run_source_code()
 
 <SourceCode>:
   text: "def f() { g(); } f();"
@@ -68,7 +67,7 @@
   lexer: lexer.AsirLexer()  # for syntax highlighting
   background_normal: textinput.TextInput.background_active.defaultvalue  # light background color
   auto_indent: True  #  効かない??
-  on_touch_up: self.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
+  on_touch_up: root.update_line_col_from_cursor(root.cursor_row + 1, root.cursor_col + 1)
 
 <Result>:
   orientation: "vertical"
@@ -79,12 +78,13 @@
     size_hint_y: None
     height: LABEL_FONT_SIZE * 2
     LabelWithBackgroundColor:
-      text: " Output (read only)"
+      text: "Output (read only)"
       background_color: (0.3, 0.3, 0.3, 1)
       color: (1, 1, 1, 1)
       text_size: self.size
       halign: "left"
       valign: "middle"
+      padding_x: 5
   TextInput:
     id: output
     text: ""
@@ -94,35 +94,49 @@
     foreground_color: (1, 1, 1, 1)
 
 <Footer>:
-  orientation: "horizontal"
+  orientation: "vertical"
   size_hint_y: None
-  height: LABEL_FONT_SIZE * 2
+  height: LABEL_FONT_SIZE * 3
   error_line: error_line
+  filename: filename
   line_col: line_col
   LabelWithBackgroundColor:
     id: error_line
     text: ""
-    background_color: (0.9, 0.9, 0.9, 1)
-    color: (0.8, 0, 0, 1)
+    background_color: (0.7, 0.7, 0.7, 1)
+    color: (1, 0, 0, 1)
     text_size: self.size
     halign: "left"
     valign: "middle"
-  LabelWithBackgroundColor:
-    id: line_col
-    text: "Line:1 Col:1 "
-    background_color: (0.9, 0.9, 0.9, 1)
-    color: (0, 0, 0, 1)
-    text_size: self.size
-    halign: "right"
-    valign: "middle"
+    padding_x: 5
+  BoxLayout:
+    orientation: "horizontal"
+    LabelWithBackgroundColor:
+      id: filename
+      text: ""
+      background_color: (0.9, 0.9, 0.9, 1)
+      color: (0, 0, 0, 1)
+      text_size: self.size
+      halign: "left"
+      valign: "middle"
+      padding_x: 5
+    LabelWithBackgroundColor:
+      id: line_col
+      text: "Line:1 Col:1"
+      background_color: (0.9, 0.9, 0.9, 1)
+      color: (0, 0, 0, 1)
+      text_size: self.size
+      halign: "right"
+      valign: "middle"
+      padding_x: 5
 
 <LabelWithBackgroundColor>:
   canvas.before:
     Color:
-      rgba: self.background_color
+      rgba: root.background_color
     Rectangle:
-      pos: self.pos
-      size: self.size
+      pos: root.pos
+      size: root.size
 
 <FileOpenDialog>:
   orientation: "vertical"
@@ -148,7 +162,7 @@
   save_button: save_button
   TextInput:
     id: filename
-    text: "script_{}_.rr".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    text: "script_{}.rr".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
     size_hint_y: None
     height: CODE_FONT_SIZE * 2
     multiline: False
