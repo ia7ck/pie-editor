@@ -183,5 +183,4 @@ dmypy.json
 # End of https://www.gitignore.io/api/c,python
 
 
-*.ttf
 py2-venv/
