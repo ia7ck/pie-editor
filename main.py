@@ -40,12 +40,6 @@ class LabelWithBackgroundColor(kivy.uix.label.Label):
 class Header(kivy.uix.boxlayout.BoxLayout):
     editor = kivy.properties.ObjectProperty(None)
 
-    def on_save_button_released(self):
-        if self.editor.has_file_created():
-            self.editor.save_file(self.editor.get_filename())
-        else:
-            self.editor.show_filename_input_form()
-
 
 class SourceCode(kivy.uix.codeinput.CodeInput):
     editor = kivy.properties.ObjectProperty(None)
@@ -66,6 +60,9 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "enter":
             self.editor.run_source_code()
             return True  # enter で改行しないために必要
+        if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "s":
+            self.editor.handle_file_save()
+            return True
         self.editor.footer.update_line_col_from_cursor(
             self.cursor_row + 1, self.cursor_col + 1
         )
@@ -137,7 +134,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         )
         self.popup.open()
 
-    def save_file(self, filename):
+    def write_source_code_to_file(self, filename):
         filepath = (
             self.filepath  # 上書き
             if self.has_file_created()
@@ -166,6 +163,12 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     def get_filename(self):
         return os.path.basename(self.filepath)
 
+    def handle_file_save(self):  # 上書き or 新規作成
+        if self.has_file_created():
+            self.write_source_code_to_file(self.get_filename())
+        else:
+            self.show_filename_input_form()
+
     def on_filepath(self, *args):
         app.title = "Pie -- " + self.filepath
         self.footer.filename.text = self.get_filename()
@@ -182,11 +185,9 @@ class Pie(kivy.app.App):
         return self.editor
 
     def on_start(self):
-        return
         self.server.start()
 
     def on_stop(self):
-        return
         self.server.shutdown()
 
 

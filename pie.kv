@@ -50,7 +50,7 @@
     id: save_button
     text: "Save"
     always_release: True
-    on_release: root.on_save_button_released()
+    on_release: root.editor.handle_file_save()
   Button:
     id: run_button
     text: "Run"
@@ -165,7 +165,7 @@
     size_hint_y: None
     height: CODE_FONT_SIZE * 2
     multiline: False
-    on_text_validate: root.editor.save_file(filename.text)
+    on_text_validate: root.editor.write_source_code_to_file(filename.text)
     cursor_width: 3
     cursor_color: (0.25, 0.25, 0.25, 1)
     cursor_blink: False
@@ -179,7 +179,7 @@
     Button:
       id: save_button
       text: "Save"
-      on_release: root.editor.save_file(filename.text)
+      on_release: root.editor.write_source_code_to_file(filename.text)
   Label:
     id: error_hint
     text: ""
