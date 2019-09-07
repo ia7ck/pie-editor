@@ -1,4 +1,7 @@
+# -*- encoding: utf-8 -*-
+
 import ctypes
+
 
 # OpenXM/src/ox_toolkit/ox_toolkit.h
 class StructTable(ctypes.Structure):

@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 import pygments.lexer
 import pygments.token
 
