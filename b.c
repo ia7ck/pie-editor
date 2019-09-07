@@ -1,3 +1,4 @@
+/* liba.so を使うプログラム */
 #include "ox_toolkit.h"
 #include <stdio.h>
 
