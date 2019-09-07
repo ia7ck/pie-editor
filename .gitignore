@@ -184,3 +184,4 @@ dmypy.json
 
 
 *.ttf
+py2-venv/
