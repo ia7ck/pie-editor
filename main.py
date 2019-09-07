@@ -24,20 +24,20 @@ FONT_SIZE = 24  # LABEL_FONT_SIZE in pie.kv
 
 
 class FileOpenDialog(kivy.uix.boxlayout.BoxLayout):
-    load_file = kivy.properties.ObjectProperty(None)
-    cancel = kivy.properties.ObjectProperty(None)
+    editor = kivy.properties.ObjectProperty(None)
 
 
 class FileSaveDialog(kivy.uix.boxlayout.BoxLayout):
-    save_file = kivy.properties.ObjectProperty(None)
-    cancel = kivy.properties.ObjectProperty(None)
+    editor = kivy.properties.ObjectProperty(None)
 
 
 class LabelWithBackgroundColor(kivy.uix.label.Label):
-    background_color = kivy.properties.ListProperty((0.5, 0.5, 0.5, 1))
+    background_color = kivy.properties.ListProperty((0.5, 0.5, 0.5, 1))  # default
 
 
 class Header(kivy.uix.boxlayout.BoxLayout):
+    editor = kivy.properties.ObjectProperty(None)
+
     def on_save_button_released(self):
         if self.editor.has_file_created():
             self.editor.save_file(self.editor.get_filename())
@@ -46,6 +46,8 @@ class Header(kivy.uix.boxlayout.BoxLayout):
 
 
 class SourceCode(kivy.uix.codeinput.CodeInput):
+    editor = kivy.properties.ObjectProperty(None)
+
     def select_error_line(self, error_line_num):
         if error_line_num == -1:
             return
@@ -54,26 +56,30 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             return
         start = sum([len(line) + 1 for line in lines[: error_line_num - 1]])
         end = sum([len(line) + 1 for line in lines[:error_line_num]]) - 1
-        if self.is_run_button_downed:
+        if self.editor.header.is_run_button_downed:
             self.focus = False  # ctrl+enter のときにこれをすると codeinput が変になる
         self.select_text(start=start, end=end)
 
     def keyboard_on_key_down(self, _window, keycode, _text, modifiers):
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "enter":
-            self.run_source_code()
+            self.editor.run_source_code()
             return True  # enter で改行しないために必要
-        self.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
+        self.editor.footer.update_line_col_from_cursor(
+            self.cursor_row + 1, self.cursor_col + 1
+        )
         # call classmethod to edit source code properly
         kivy.uix.textinput.TextInput.keyboard_on_key_down(
             self, _window, keycode, _text, modifiers
         )
 
     def keyboard_on_key_up(self, _window, _keycode):
-        self.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
+        self.editor.footer.update_line_col_from_cursor(
+            self.cursor_row + 1, self.cursor_col + 1
+        )
 
 
 class Result(kivy.uix.boxlayout.BoxLayout):
-    output = kivy.properties.ObjectProperty(None)
+    pass
 
 
 class Footer(kivy.uix.boxlayout.BoxLayout):
@@ -108,9 +114,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
     def show_files(self):
         self.popup = kivy.uix.popup.Popup(
-            title="Open File",
-            size_hint=(0.8, 0.8),
-            content=FileOpenDialog(load_file=self.load_file, cancel=self.dismiss_popup),
+            title="Open File", size_hint=(0.8, 0.8), content=FileOpenDialog(editor=self)
         )
         self.popup.open()
 
@@ -127,7 +131,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             title="Save File",
             size_hint=(0.8, None),
             height=FONT_SIZE * 7.5,
-            content=FileSaveDialog(save_file=self.save_file, cancel=self.dismiss_popup),
+            content=FileSaveDialog(editor=self),
         )
         self.popup.open()
 
@@ -176,9 +180,11 @@ class Pie(kivy.app.App):
         return self.editor
 
     def on_start(self):
+        return
         self.server.start()
 
     def on_stop(self):
+        return
         self.server.shutdown()
 
 

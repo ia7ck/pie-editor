@@ -24,9 +24,7 @@
     BoxLayout:
       SourceCode:
         id: source_code
-        is_run_button_downed: root.header.is_run_button_downed
-        run_source_code: root.run_source_code
-        update_line_col_from_cursor: root.footer.update_line_col_from_cursor
+        editor: editor
     Splitter:
       sizable_from: "top"
       keep_within_parent: True
@@ -67,7 +65,7 @@
   lexer: lexer.AsirLexer()  # for syntax highlighting
   background_normal: textinput.TextInput.background_active.defaultvalue  # light background color
   auto_indent: True  #  効かない??
-  on_touch_up: root.update_line_col_from_cursor(root.cursor_row + 1, root.cursor_col + 1)
+  on_touch_up: root.editor.footer.update_line_col_from_cursor(root.cursor_row + 1, root.cursor_col + 1)
 
 <Result>:
   orientation: "vertical"
@@ -144,6 +142,7 @@
     id: filechooser
     title: "Open File"
     rootpath: os.getcwd()
+    on_submit: root.editor.load_file(filechooser.selection)
     # filters: ""
   BoxLayout:
     size_hint_y: None
@@ -151,10 +150,10 @@
     orientation: "horizontal"
     Button:
       text: "Cancel"
-      on_release: root.cancel()
+      on_release: root.editor.dismiss_popup()
     Button:
       text: "Open"
-      on_release: root.load_file(filechooser.selection)
+      on_release: root.editor.load_file(filechooser.selection)
 
 <FileSaveDialog>:
   orientation: "vertical"
@@ -166,7 +165,7 @@
     size_hint_y: None
     height: CODE_FONT_SIZE * 2
     multiline: False
-    on_text_validate: root.save_file(filename.text)
+    on_text_validate: root.editor.save_file(filename.text)
     cursor_width: 3
     cursor_color: (0.25, 0.25, 0.25, 1)
     cursor_blink: False
@@ -176,11 +175,11 @@
     orientation: "horizontal"
     Button:
       text: "Cancel"
-      on_release: root.cancel()
+      on_release: root.editor.dismiss_popup()
     Button:
       id: save_button
       text: "Save"
-      on_release: root.save_file(filename.text)
+      on_release: root.editor.save_file(filename.text)
   Label:
     id: error_hint
     text: ""
