@@ -1,5 +1,3 @@
-import re
-import itertools
 import textwrap
 
 
