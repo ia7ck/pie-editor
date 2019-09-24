@@ -42,12 +42,12 @@ def split_tokens(s):
             i += 2
         else:
             c = s[i]
-            if c == "&":  # &&, ||
+            if c == "&":  # &&
                 assert s[i + 1] == "&", "got: '{}', want: '&'".format(s[i + 1])
                 tokens.append("&&")
                 i += 2
-            elif c == "|":  # ||, |opt=123
-                t = "||" if s[i + 1] == "|" else "|"
+            elif c in {"|", ":"}:  # ||, ::
+                t = c + c if s[i + 1] == c else c
                 tokens.append(t)
                 i += len(t)
             elif c in {"*", "/", "%", "^", "=", ">", "<", "!"}:  # *, <=, !, !=, ...
@@ -91,6 +91,11 @@ def format_code(input_text):
     depth = 0  # indent の深さ
     lpar, lpar_at_for, inside_for = 0, -1, False
     ops = set("+ - * / % ^ = ? : < > += -= *= %= ^= == <= >= != && | ||".split(" "))
+    keywords = set(
+        "def module function global local localf if else return static extern for while".split(
+            " "
+        )
+    )
     i = 0
     while i + 1 < len(tokens):
         t = tokens[i]
@@ -143,7 +148,7 @@ def format_code(input_text):
             lpar -= 1
             if lpar == lpar_at_for:
                 inside_for = False
-        elif t in {"def", "if", "else", "return", "for", "module", "localf", "extern"}:
+        elif t in keywords:
             ln += t + " "
             if t == "for":
                 inside_for = True
