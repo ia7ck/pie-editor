@@ -1,63 +1,61 @@
 import textwrap
 
 
-def split_tokens(line):
-    i, n = 0, len(line)
-    line += " "  # line[n] == " "
+def split_tokens(s):
+    i, n = 0, len(s)
+    s += " "  # s[n] == " "
     tokens, delims = [], set(list("+-*/%^=,:;$(){}!?<>[]&|"))
     while i < n:
-        if line[i] == '"':  # 文字列の中は token に分割しない
+        if s[i] == '"':  # 文字列の中は token に分割しない
             string = ""
             i += 1
-            while i < n and line[i] != '"':
-                string += line[i]
+            while i < n and s[i] != '"':
+                string += s[i]
                 i += 1
-            assert line[i] == '"', "got: '{}', want: '\"'".format(line[i])
+            assert s[i] == '"', "got: '{}', want: '\"'".format(s[i])
             tokens.append('"' + string + '"')
             i += 1
-        elif line[i] == "#":  # #if FLAG, #endif, ...
+        elif s[i] == "#":  # #if FLAG, #endif, ...
             pre = ""
             i += 1
-            while i < n and line[i] != "\n":
-                pre += line[i]
+            while i < n and s[i] != "\n":
+                pre += s[i]
                 i += 1
             tokens.extend(["#", pre])
             i += 1
-        elif line[i : i + 2] == "//":
+        elif s[i : i + 2] == "//":
             comment = ""
             i += 2
-            while i < n and line[i] != "\n":
-                comment += line[i]
+            while i < n and s[i] != "\n":
+                comment += s[i]
                 i += 1
             tokens.extend(["//", comment.lstrip()])  # 先頭の空白を取り除く
             i += 1
-        elif line[i : i + 2] == "/*":
+        elif s[i : i + 2] == "/*":
             comment = ""
             i += 2
-            while i < n and line[i : i + 2] != "*/":
-                comment += line[i]
+            while i < n and s[i : i + 2] != "*/":
+                comment += s[i]
                 i += 1
-            assert line[i : i + 2] == "*/", "got: '{}', want: '*/'".format(
-                line[i : i + 2]
-            )
+            assert s[i : i + 2] == "*/", "got: '{}', want: '*/'".format(s[i : i + 2])
             tokens.extend(["/*", comment.strip("\n"), "*/"])  # 先頭末尾に改行があったら取り除く
             i += 2
         else:
-            c = line[i]
+            c = s[i]
             if c == "&":  # &&, ||
-                assert line[i + 1] == "&", "got: '{}', want: '&'".format(line[i + 1])
+                assert s[i + 1] == "&", "got: '{}', want: '&'".format(s[i + 1])
                 tokens.append("&&")
                 i += 2
             elif c == "|":  # ||, |opt=123
-                t = "||" if line[i + 1] == "|" else "|"
+                t = "||" if s[i + 1] == "|" else "|"
                 tokens.append(t)
                 i += len(t)
             elif c in {"*", "/", "%", "^", "=", ">", "<", "!"}:  # *, <=, !, !=, ...
-                t = c + "=" if line[i + 1] == "=" else c
+                t = c + "=" if s[i + 1] == "=" else c
                 tokens.append(t)
                 i += len(t)
             elif c in {"+", "-"}:  # +, ++, +=, ...
-                t = c + line[i + 1] if line[i + 1] in {c, "="} else c
+                t = c + s[i + 1] if s[i + 1] in {c, "="} else c
                 tokens.append(t)
                 i += len(t)
             elif c in delims:
@@ -67,13 +65,13 @@ def split_tokens(line):
                 idt = ""
                 while (
                     i < n
-                    and (not line[i] in {'"', " ", "\n", "\t"})
-                    and (not line[i] in delims)
+                    and (not s[i] in {'"', " ", "\n", "\t"})
+                    and (not s[i] in delims)
                 ):
-                    idt += line[i]
+                    idt += s[i]
                     i += 1
                 tokens.append(idt)
-        while i < n and line[i] in {" ", "\n", "\t"}:
+        while i < n and s[i] in {" ", "\n", "\t"}:
             i += 1  # 空白と改行を飛ばす
     return tokens
 
@@ -82,7 +80,7 @@ def should_append_space(text):
     return len(text) >= 1 and (not text[-1] in {" ", "(", "["})
 
 
-def indented_text(text, depth):
+def indent_text(text, depth):
     return " " * (depth * 4) + text
 
 
@@ -97,7 +95,7 @@ def format_code(input_text):
     while i + 1 < len(tokens):
         t = tokens[i]
         if t == "$":
-            output_lines.append(indented_text(ln + "$", depth))
+            output_lines.append(indent_text(ln + "$", depth))
             ln = ""
         elif t == "#":
             assert ln == ""
@@ -106,26 +104,26 @@ def format_code(input_text):
         elif t == "//":
             if len(ln) >= 1 and ln[-1] != " ":
                 ln += " "
-            output_lines.append(indented_text(ln + t + " " + tokens[i + 1], depth))
+            output_lines.append(indent_text(ln + t + " " + tokens[i + 1], depth))
             i += 1
             ln = ""
         elif t in {"/*", "*/"}:
             if len(ln) >= 1:
-                output_lines.append(indented_text(ln, depth))
+                output_lines.append(indent_text(ln, depth))
                 ln = ""
-            output_lines.append(indented_text(t, depth))
+            output_lines.append(indent_text(t, depth))
         elif t == ";":
             if inside_for:  # for (I = 0; I < 10; I++)
                 ln += ";" + " "
             else:
-                output_lines.append(indented_text(ln + ";", depth))
+                output_lines.append(indent_text(ln + ";", depth))
                 ln = ""
         elif t in ops:
             if should_append_space(ln):  # (, [, などの直後だと False
                 ln += " "
             ln += t + " "
         elif t == "{":
-            output_lines.append(indented_text(ln + "{", depth))
+            output_lines.append(indent_text(ln + "{", depth))
             ln = ""
             depth += 1
         elif t == "}":
@@ -133,15 +131,15 @@ def format_code(input_text):
             if tokens[i + 1] == "else":  # } else
                 ln += "}" + " "
             else:
-                output_lines.append(indented_text(ln + "}", depth))
+                output_lines.append(indent_text(ln + "}", depth))
                 ln = ""
         elif t == ",":
             ln += "," + " "
         elif t == ")":
             if tokens[i + 1] in {",", ";", "[", "]", ")"}:
                 ln += ")"
-            else:
-                ln += ")" + " "  # ) { ... }
+            else:  # () { ... }, () return
+                ln += ")" + " "
             lpar -= 1
             if lpar == lpar_at_for:
                 inside_for = False
@@ -158,7 +156,7 @@ def format_code(input_text):
     assert depth == 0, "Missing right brace: '}'"
     assert lpar == 0, "Missing right parenthesis: ')'"
     if len(ln) >= 1:
-        output_lines.append(indented_text(ln, depth))
+        output_lines.append(indent_text(ln, depth))
     return "\n".join(output_lines)
 
 
