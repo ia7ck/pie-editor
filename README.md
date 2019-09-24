@@ -3,7 +3,7 @@
 1. `$ source /path/to/OpenXM_HOME/rc/dot.bashrc`
 2. `$ ./build.sh`
     - `liba.so` is created.
-3. `$ pip install --user -r requirements.txt`
+3. `$ pip install -r requirements.txt`
 4. `$ python main.py`
 
 #### Keyboard shortcut
