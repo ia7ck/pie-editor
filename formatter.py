@@ -140,7 +140,7 @@ class Formatter:
                 self.append_token("$")
                 self.append_current_line()
             elif t == "#":
-                assert self.current_line == ""
+                assert len(self.current_line) == 0
                 self.append_token("#" + tokens[i + 1])
                 self.append_current_line()
                 i += 1
@@ -154,9 +154,7 @@ class Formatter:
                 if comment.count("\n") >= 1:  # 複数行コメント
                     self.append_multiline_comment(comment)
                 else:
-                    if len(self.current_line) >= 1 and self.current_line[-1] != " ":
-                        self.append_token(" ")
-                    self.append_token("/*" + " " + comment.strip() + " " + "*/")
+                    self.append_singleline_comment("/*", comment)
                 i += 2
             elif t.rstrip() == ";":  # t == ";" or t == ";\n"
                 if inside_for:  # for (I = 0; I < 10; I++)
@@ -219,7 +217,7 @@ class Formatter:
             i += 1
         assert self.depth == 0, "Missing right brace: '}'"
         assert lpar == 0, "Missing right parenthesis: ')'"
-        assert len(self.current_line) == 0
+        assert len(self.current_line) == 0, self.current_line
         return "\n".join(self.output_lines)
 
 
@@ -269,14 +267,22 @@ def test_format_code():
             Abc;
             //   single line
             A =123;//single line2
-            if (1) {//comment
+            if (1) {/*comment */
+            Xyz;
                 /*
                 c
                     o*/
             }//   comment
+            else{
+                /*
+                c o  mment
+                */
+            }
             """,
             """
-            A = 1 + /* comment  comment */ - 3 /* c */ / 5; /* cm */
+            A = 1 + /* comment  comment */
+            - 3 /* c */
+            / 5; /* cm */
             A *= A;
             /*
                multi
@@ -294,13 +300,19 @@ def test_format_code():
             // single line
             A = 123; // single line2
             if (1) {
-                // comment
+                /* comment */
+                Xyz;
                 /*
                 c
                     o
                 */
             }
             // comment
+            else {
+                /*
+                c o  mment
+                */
+            }
             """,
         ),
         (
