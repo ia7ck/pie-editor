@@ -105,9 +105,9 @@ class Formatter:
         assert comment.count("\n") == 0
         if len(self.current_line) >= 1 and self.current_line[-1] != " ":
             self.append_token(" ")
-        self.append_token(begin + " " + comment.strip())
+        self.append_token(begin + comment)
         if begin == "/*":
-            self.append_token(" " + "*/")
+            self.append_token("*/")
         self.append_current_line()
 
     def append_multiline_comment(self, comment):
@@ -141,11 +141,10 @@ class Formatter:
                 self.append_current_line()
             elif t == "#":
                 assert len(self.current_line) == 0
-                self.append_token("#" + tokens[i + 1])
-                self.append_current_line()
+                self.output_lines.append("#" + tokens[i + 1])
                 i += 1
             elif t == "//":
-                self.append_token("//" + " " + tokens[i + 1].strip())
+                self.append_token("//" + tokens[i + 1])
                 self.append_current_line()
                 i += 1
             elif t == "/*":
@@ -280,9 +279,9 @@ def test_format_code():
             }
             """,
             """
-            A = 1 + /* comment  comment */
-            - 3 /* c */
-            / 5; /* cm */
+            A = 1 + /*   comment  comment*/
+            - 3 /*c*/
+            / 5; /* cm*/
             A *= A;
             /*
                multi
@@ -295,19 +294,19 @@ def test_format_code():
                 b
             */
             A = - 1;
-            /* ccmm */
+            /*      ccmm*/
             Abc;
-            // single line
-            A = 123; // single line2
+            //   single line
+            A = 123; //single line2
             if (1) {
-                /* comment */
+                /*comment */
                 Xyz;
                 /*
                 c
                     o
                 */
             }
-            // comment
+            //   comment
             else {
                 /*
                 c o  mment
