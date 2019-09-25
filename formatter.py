@@ -115,8 +115,7 @@ class Formatter:
             self.append_current_line()
         self.append_token("/*")
         self.append_current_line()
-        self.append_token(comment)
-        self.append_current_line()
+        self.output_lines.append(comment.rstrip())
         self.append_token("*/")
         self.append_current_line()
 
@@ -220,8 +219,7 @@ class Formatter:
             i += 1
         assert self.depth == 0, "Missing right brace: '}'"
         assert lpar == 0, "Missing right parenthesis: ')'"
-        if len(self.current_line) >= 1:
-            self.append_current_line()
+        assert len(self.current_line) == 0
         return "\n".join(self.output_lines)
 
 
@@ -267,9 +265,14 @@ def test_format_code():
                 b
             */
             A=-1;
+            /*      ccmm*/
+            Abc;
             //   single line
             A =123;//single line2
             if (1) {//comment
+                /*
+                c
+                    o*/
             }//   comment
             """,
             """
@@ -286,10 +289,16 @@ def test_format_code():
                 b
             */
             A = - 1;
+            /* ccmm */
+            Abc;
             // single line
             A = 123; // single line2
             if (1) {
                 // comment
+                /*
+                c
+                    o
+                */
             }
             // comment
             """,
@@ -381,6 +390,20 @@ def test_format_code():
             """
             A = [1, 2, - 3];
             A[(1 - 1)];
+            """,
+        ),
+        (
+            """
+            module my_module $
+            localf  myfunc$
+            endmodule$
+            end $
+            """,
+            """
+            module my_module$
+            localf myfunc$
+            endmodule$
+            end$
             """,
         ),
     ]
