@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 import textwrap
 
 
@@ -197,7 +200,7 @@ class Formatter:
             elif t == ",":
                 self.append_token("," + " ")
             elif t == ")":
-                if tokens[i + 1].rstrip() in {",", ";", "[", "]", ")"}:
+                if tokens[i + 1].rstrip() in {",", ";", "$", "[", "]", ")"}:
                     self.append_token(")")
                 else:  # () { ... }, () return
                     self.append_token(")" + " ")
@@ -216,56 +219,129 @@ class Formatter:
             i += 1
         assert self.depth == 0, "Missing right brace: '}'"
         assert lpar == 0, "Missing right parenthesis: ')'"
-        assert len(self.current_line) == 0, self.current_line
+        if len(self.current_line) >= 1:
+            self.append_current_line()
         return "\n".join(self.output_lines)
 
 
 def test_format_code():
     testcases = [
+        ("Abc=12+3;", "Abc = 12 + 3;"),
+        ("  (1+  2)   /3", "(1 + 2) / 3"),
+        ("1^2*3%4+(-56)", "1 ^ 2 * 3 % 4 + (- 56)"),
+        ("1 &&2|| 3", "1 && 2 || 3"),
+        ('Msg   = "1  +2 "  ;', 'Msg = "1  +2 ";'),
+        ("f =! true!=   false;", "f = !true != false;"),
+        ("eval(    sin(@pi /2));", "eval(sin(@pi / 2));"),
+        ("A+=B;", "A += B;"),
+        ("A++ -B", "A++ - B"),
+        ("++A* B;", "++A * B;"),
+        ("A^=B;", "A ^= B;"),
+        ("return   A<B?   A :B;", "return A < B ? A : B;"),
+        ("A= [1,  2, -3] ;", "A = [1, 2, - 3];"),
+        ("A[(1-1)];", "A[(1 - 1)];"),
         (
+            "if(1){I;}else{E;}",
             """
-            Abc=(12  +3 )/  4^  (5%6)*( -7  )- 89  -0;
-            Msg   = "1  +2*_ "  ;
-            f =! true!=   false;
-            eval(    sin(@pi /2));
-            """,
-            """
-            Abc = (12 + 3) / 4 ^ (5 % 6) * (- 7) - 89 - 0;
-            Msg = "1  +2*_ ";
-            f = !true != false;
-            eval(sin(@pi / 2));
+            if (1) {
+                I;
+            } else {
+                E;
+            }
             """,
         ),
         (
             """
-            A+=B;
-            A++ -B;
-            ++A* B;
-            A^=B;
+            if(Cond) return 1; else {return 0;}
             """,
             """
-            A += B;
-            A++ - B;
-            ++A * B;
-            A ^= B;
+            if (Cond) return 1;
+            else {
+                return 0;
+            }
+            """,
+        ),
+        (
+            """
+            {
+                #if DEBUG
+                      print( "debug print");
+              #endif
+            }
+            """,
+            """
+            {
+            #if DEBUG
+                print("debug print");
+            #endif
+            }
+            """,
+        ),
+        (
+            """
+              for(I  =0; I< 10;   I++){continue;
+              break;}
+            """,
+            """
+            for (I = 0; I < 10; I++) {
+                continue;
+                break;
+            }
             """,
         ),
         (
             """
             A =1 +/*   comment  comment*/- 3/*c*//5;/* cm*/
-            A*=A;
+            A;
+            """,
+            """
+            A = 1 + /*   comment  comment*/
+            - 3 /*c*/
+            / 5; /* cm*/
+            A;
+            """,
+        ),
+        (
+            """
             /*   multi
             line
               comment*/
-            A=2^3;/*
+            A;/*
               a
                 b
             */
-            A=-1;
+            B;
             /*      ccmm*/
-            Abc;
+            """,
+            """
+            /*
+               multi
+            line
+              comment
+            */
+            A;
+            /*
+              a
+                b
+            */
+            B;
+            /*      ccmm*/
+            """,
+        ),
+        (
+            """
+            A;
             //   single line
-            A =123;//single line2
+            B;//single line2
+            """,
+            """
+            A;
+            //   single line
+            B; //single line2
+            """,
+        ),
+        (
+            """
             if (1) {/*comment */
             Xyz;
                 /*
@@ -273,31 +349,12 @@ def test_format_code():
                     o*/
             }//   comment
             else{
-                /*
+              /*
                 c o  mment
                 */
             }
             """,
             """
-            A = 1 + /*   comment  comment*/
-            - 3 /*c*/
-            / 5; /* cm*/
-            A *= A;
-            /*
-               multi
-            line
-              comment
-            */
-            A = 2 ^ 3;
-            /*
-              a
-                b
-            */
-            A = - 1;
-            /*      ccmm*/
-            Abc;
-            //   single line
-            A = 123; //single line2
             if (1) {
                 /*comment */
                 Xyz;
@@ -312,95 +369,6 @@ def test_format_code():
                 c o  mment
                 */
             }
-            """,
-        ),
-        (
-            """
-            #if DEBUG
-             print( "debug print");
-            #endif
-            """,
-            """
-            #if DEBUG
-            print("debug print");
-            #endif
-            """,
-        ),
-        (
-            """
-            def f123  (A,  B  ){
-            if(1== 2 &&true||  false){ X=1+2;  someFunc(X);}
-            else
-            {
-                  Y =123;
-            }}
-            """,
-            """
-            def f123(A, B) {
-                if (1 == 2 && true || false) {
-                    X = 1 + 2;
-                    someFunc(X);
-                } else {
-                    Y = 123;
-                }
-            }
-            """,
-        ),
-        (
-            """
-            def sign(X )
-            {return (X==0)? 0: (X<0)? -1: 1;
-            }
-            """,
-            """
-            def sign(X) {
-                return (X == 0) ? 0 : (X < 0) ? - 1 : 1;
-            }
-            """,
-        ),
-        (
-            """
-              for(I  =0; I< 10;   I++)
-            {for(J=0;J<I  ;++J   ){
-            continue;  K= I *J;
-            L =I + J;} print(I*2 ); break  ;}
-            """,
-            """
-            for (I = 0; I < 10; I++) {
-                for (J = 0; J < I; ++J) {
-                    continue;
-                    K = I * J;
-                    L = I + J;
-                }
-                print(I * 2);
-                break;
-            }
-            """,
-        ),
-        (
-            """
-            def f(Cond) {
-                if(Cond)return 1;
-                else{return 0 ; }
-            }
-            """,
-            """
-            def f(Cond) {
-                if (Cond) return 1;
-                else {
-                    return 0;
-                }
-            }
-            """,
-        ),
-        (
-            """
-            A= [1,  2, -3] ;
-            A[(1-1)];
-            """,
-            """
-            A = [1, 2, - 3];
-            A[(1 - 1)];
             """,
         ),
         (
