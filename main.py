@@ -18,7 +18,7 @@ import server
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
-kivy.core.window.Window.size = (1920, 1020)  # 適当に大きめに設定しておく
+kivy.core.window.Window.size = (800, 600)
 kivy.core.text.LabelBase.register("M+ P Type-1 Regular", "./mplus-1p-regular.ttf")
 kivy.core.text.LabelBase.register("M+ M Type-1 Regular", "./mplus-1m-regular.ttf")
 
