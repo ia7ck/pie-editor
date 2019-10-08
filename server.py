@@ -60,6 +60,14 @@ class Server:
 
     def start(self):
         self.server = self.lib.start()
+        self.execute_string(
+            """
+            if (1) { 
+                ctrl("message", 0); 
+                ctrl("no_debug_on_error", 1); 
+            } else {} ;
+            """
+        )
 
     def execute_string(self, text):
         self.ensure_server_started()
@@ -83,11 +91,26 @@ if __name__ == "__main__":
     asir_server = Server()
     asir_server.start()
     asir_server.execute_string(
-        """ if (1) {
-        X = 123;
-        Y = X * X;
-    };"""
+        """ 
+        if (1) {
+            X = 123;
+            Y = X * X;
+        } else {};
+        """
     )
     result = asir_server.pop_string()
-    print(result)  # => 15129
+    print(result)  #=> 15129
+    asir_server.execute_string(
+        """ 
+        if (1) {
+            def f() {
+                g();
+            }
+            f();
+        } else {};
+        """
+    )
+    result = asir_server.pop_string()
+    print(result)
+    #=> error([6,4294967295,evalf : g undefined,[asir_where,[[toplevel,6],[string,f,4]]]])
     asir_server.shutdown()
