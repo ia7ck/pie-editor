@@ -52,8 +52,6 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             return
         start = sum([len(line) + 1 for line in lines[: error_line_num - 1]])
         end = sum([len(line) + 1 for line in lines[:error_line_num]]) - 1
-        if self.editor.header.is_run_button_downed:
-            self.focus = False  # ctrl+enter のときにこれをすると codeinput が変になる
         self.select_text(start=start, end=end)
 
     def keyboard_on_key_down(self, _window, keycode, _text, modifiers):
@@ -66,15 +64,17 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
         self.editor.footer.update_line_col_from_cursor(
             self.cursor_row + 1, self.cursor_col + 1
         )
-        # call classmethod to edit source code properly
-        kivy.uix.textinput.TextInput.keyboard_on_key_down(
-            self, _window, keycode, _text, modifiers
+        # https://pyky.github.io/kivy-doc-ja/examples/gen__demo__kivycatalog__main__py.html
+        # https://kivy.org/doc/stable/api-kivy.uix.behaviors.focus.html#kivy.uix.behaviors.focus.FocusBehavior.keyboard_on_key_down
+        return super(SourceCode, self).keyboard_on_key_down(
+            _window, keycode, _text, modifiers
         )
 
     def keyboard_on_key_up(self, _window, _keycode):
         self.editor.footer.update_line_col_from_cursor(
             self.cursor_row + 1, self.cursor_col + 1
         )
+        return super(SourceCode, self).keyboard_on_key_up(_window, _keycode)
 
 
 class Result(kivy.uix.boxlayout.BoxLayout):
@@ -103,7 +103,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     filepath = kivy.properties.StringProperty("")
 
     def run_source_code(self, *args):
-        server_input = "if (1) { " + self.source_code.text + " };"
+        server_input = "if (1) { " + self.source_code.text + " } else {};"
         app.server.execute_string(server_input)
         server_output = app.server.pop_string()
         self.result.output.text = server_output
