@@ -83,7 +83,7 @@ class Server:
         self.server = None
 
     def ensure_server_started(self):
-        if self.server == None:
+        if self.server is None:
             raise RuntimeError("The server seems not to start.")
 
 

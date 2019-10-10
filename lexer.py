@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 
+# for syntax highlighting
+
 import pygments.lexer
 import pygments.token
 

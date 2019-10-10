@@ -17,7 +17,7 @@ import kivy.uix.label
 import kivy.uix.popup
 
 from codebeautify import beautifier
-import scanner
+import erroranalyzer
 import server
 
 
@@ -120,7 +120,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         app.server.execute_string(server_input)
         server_output = app.server.pop_string()
         self.result.output.text = server_output
-        error_line_num = scanner.get_error_line(server_output)
+        error_line_num = erroranalyzer.get_error_line(server_output)
         # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
         self.footer.update_error_line(error_line_num)
         self.source_code.select_error_line(error_line_num)
@@ -129,6 +129,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         b = beautifier.Beautifier(self.source_code.text)
         self.source_code.text = b.beautify()
 
+    # ファイル関係
     def show_files(self):
         self.popup = kivy.uix.popup.Popup(
             title="Open File", size_hint=(0.8, 0.8), content=FileOpenDialog(editor=self)

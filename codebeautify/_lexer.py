@@ -15,10 +15,10 @@ class Lexer:
         self.delims = set(list("+-*/%^=,:;$(){}!?<>[]&|"))
 
     def is_end(self):
-        return self.ch == None
+        return self.ch is None
 
     def advance(self):
-        if self.ch == None:
+        if self.ch is None:
             print("[log] self.ch is None")
             return
         self.ch = None if self.i + 1 >= self.n else self.text[self.i + 1]

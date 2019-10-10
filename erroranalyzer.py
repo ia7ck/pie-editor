@@ -9,7 +9,7 @@ def get_error_line(text):
     if not ("error" in text):
         return -1
     m = re.search(r"asir_where,(.*)\]\]\)", text)
-    if m == None:  # match しなかった
+    if m is None:  # match しなかった
         return -1
     errors = m.group(1)
     error_line_numbers = [
