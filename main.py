@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "./codebeautify"))
 
 import kivy.app
 import kivy.core.text
@@ -13,8 +15,10 @@ import kivy.uix.codeinput
 import kivy.uix.label
 import kivy.uix.popup
 
+from codebeautify import beautifier
 import scanner
 import server
+
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
@@ -60,6 +64,9 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             return True  # enter で改行しないために必要
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "s":
             self.editor.handle_file_save()
+            return True
+        if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "b":
+            self.editor.beautify_source_code()
             return True
         self.editor.footer.update_line_col_from_cursor(
             self.cursor_row + 1, self.cursor_col + 1
@@ -110,6 +117,10 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         error_line_num = scanner.get_error_line(server_output)
         self.footer.update_error_line(error_line_num)
         self.source_code.select_error_line(error_line_num)
+
+    def beautify_source_code(self, *args):
+        b = beautifier.Beautifier(self.source_code.text)
+        self.source_code.text = b.beautify()
 
     def show_files(self):
         self.popup = kivy.uix.popup.Popup(

@@ -56,6 +56,11 @@
     text: "Run"
     always_release: True  # 長押し無し
     on_release: root.editor.run_source_code()
+  Button:
+    id: beautify_button
+    text: "Beautify"
+    always_release: True
+    on_release: root.editor.beautify_source_code()
 
 <SourceCode>:
   text: "def f() { g(); } f();"
