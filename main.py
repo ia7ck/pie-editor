@@ -2,6 +2,7 @@
 
 import os
 import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "./codebeautify"))
 
 import kivy.app
@@ -110,11 +111,17 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     filepath = kivy.properties.StringProperty("")
 
     def run_source_code(self, *args):
-        server_input = "if (1) { " + self.source_code.text + " } else {};"
+        selection = self.source_code.selection_text
+        server_input = (
+            "if (1) { "
+            + (selection if len(selection) > 0 else self.source_code.text)
+            + " } else {};"
+        )
         app.server.execute_string(server_input)
         server_output = app.server.pop_string()
         self.result.output.text = server_output
         error_line_num = scanner.get_error_line(server_output)
+        # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
         self.footer.update_error_line(error_line_num)
         self.source_code.select_error_line(error_line_num)
 
