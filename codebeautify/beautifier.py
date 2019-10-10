@@ -75,7 +75,7 @@ class Beautifier:
                         Token.LPAR,
                     }:
                         self.append_content("-")  # 前置
-                    elif prev.token_type == Token.OPERATOR and len(prev.content) == 1:
+                    elif prev.content in {"=", "==", "<", "<=", ">", ">="}:
                         self.append_content("-")  # 前置
                     else:
                         self.append_content("-", " ")
