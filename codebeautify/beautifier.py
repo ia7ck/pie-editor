@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -67,10 +68,17 @@ class Beautifier:
                     else:
                         self.append_after_rstrip(t.content, " ")
                 elif t.content == "-":
-                  if prev.token_type in {"", Token.SEMICOLON, Token.OPERATOR, Token.LPAR}:
-                    self.append_content("-")
-                  else:
-                    self.append_content("-", " ")
+                    if prev.token_type in {
+                        "",
+                        Token.COMMA,
+                        Token.SEMICOLON,
+                        Token.LPAR,
+                    }:
+                        self.append_content("-")  # 前置
+                    elif prev.token_type == Token.OPERATOR and len(prev.content) == 1:
+                        self.append_content("-")  # 前置
+                    else:
+                        self.append_content("-", " ")
                 else:
                     self.append_content(t.content, " ")
             elif t.token_type == Token.LPAR:

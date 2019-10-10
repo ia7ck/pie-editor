@@ -55,7 +55,7 @@ class Lexer:
         begin = self.i
         while self.ch and (not self.ch in (self.delims | {'"', " ", "\n", "\t"})):
             self.advance()
-        assert self.ch == None or begin < self.i
+        assert self.ch is None or begin < self.i
         return Token(Token.WORD, self.text[begin : self.i])
 
     def read_string(self):
