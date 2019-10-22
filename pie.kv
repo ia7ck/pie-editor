@@ -36,36 +36,37 @@
           id: footer
 
 <Header>:
-  orientation: "horizontal"
-  size_hint_y: None
-  height: LABEL_FONT_SIZE * 2
-  run_button: run_button
-  is_run_button_downed: root.run_button.state == "down"
-  Button:
-    id: file_open_button
-    text: "Open File"
-    always_release: True
-    on_release: root.editor.show_files()
-  Button:
-    id: save_button
-    text: "Save"
-    always_release: True
-    on_release: root.editor.handle_file_save()
-  Button:
-    id: run_button
-    text: "Run"
-    always_release: True  # 長押し無し
-    on_release: root.editor.run_source_code()
-  Button:
-    id: stop_button
-    text: "Stop"
-    always_release: True
-    on_release: root.editor.stop_running()
-  Button:
-    id: beautify_button
-    text: "Beautify"
-    always_release: True
-    on_release: root.editor.beautify_source_code()
+  ActionView:
+    orientation: "horizontal"
+    size_hint_y: None
+    height: LABEL_FONT_SIZE * 2
+    ActionPrevious:
+      title: ""
+      with_previous: False
+      size_hint: None, None
+      size: 0, 0  # icon を非表示にする
+    ActionGroup:
+      text: "File"
+      mode: "spinner"
+      ActionButton:
+        text: "Open"
+        on_release: root.editor.show_files()
+      ActionButton:
+        text: "Save"
+        on_release: root.editor.handle_file_save()
+    ActionGroup:
+      text: ""
+      ActionButton:
+        text: "Run"
+        icon: "atlas://data/images/defaulttheme/media-playback-start"
+        on_release: root.editor.run_source_code()
+      ActionButton:
+        text: "Stop"
+        icon: "atlas://data/images/defaulttheme/media-playback-stop"
+        on_release: root.editor.stop_running()
+      ActionButton:
+        text: "Beautify"
+        on_release: root.editor.beautify_source_code()
 
 <SourceCode>:
   text: "def f() { g(); } f();"
@@ -208,3 +209,5 @@
 <TextInput>:
   font_name: "M+ M Type-1 Regular"
   font_size: CODE_FONT_SIZE
+<Button>:
+  always_release: True

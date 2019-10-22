@@ -11,6 +11,7 @@ import kivy.core.text
 import kivy.core.window
 import kivy.graphics
 import kivy.properties
+import kivy.uix.actionbar
 import kivy.uix.boxlayout
 import kivy.uix.button
 import kivy.uix.codeinput
@@ -43,7 +44,7 @@ class LabelWithBackgroundColor(kivy.uix.label.Label):
     background_color = kivy.properties.ListProperty((0.5, 0.5, 0.5, 1))  # default
 
 
-class Header(kivy.uix.boxlayout.BoxLayout):
+class Header(kivy.uix.actionbar.ActionBar):
     editor = kivy.properties.ObjectProperty(None)
 
 
