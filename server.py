@@ -53,6 +53,12 @@ class Server:
         self.lib.pop_string.restype = ctypes.c_char_p
         self.lib.pop_string.argtypes = (ctypes.POINTER(StructOXFILE),)
 
+        self.lib.my_select.restype = ctypes.c_int
+        self.lib.my_select.argtypes = (ctypes.POINTER(StructOXFILE),)
+
+        self.lib.reset.restype = None
+        self.lib.reset.argtypes = (ctypes.POINTER(StructOXFILE),)
+
         self.lib.shutdown.restype = None
         self.lib.shutdown.argtypes = (ctypes.POINTER(StructOXFILE),)
 
@@ -68,6 +74,7 @@ class Server:
             } else {} ;
             """
         )
+        self.pop_string()
 
     def execute_string(self, text):
         self.ensure_server_started()
@@ -76,6 +83,14 @@ class Server:
     def pop_string(self):
         self.ensure_server_started()
         return self.lib.pop_string(self.server).decode("utf-8")
+
+    def select(self):
+        self.ensure_server_started()
+        return self.lib.my_select(self.server)
+
+    def reset(self):
+        self.ensure_server_started()
+        self.lib.reset(self.server)
 
     def shutdown(self):
         self.ensure_server_started()
@@ -88,20 +103,21 @@ class Server:
 
 
 if __name__ == "__main__":
-    asir_server = Server()
-    asir_server.start()
-    asir_server.execute_string(
-        """ 
+    sv = Server()
+    sv.start()
+    sv.execute_string(
+        """
         if (1) {
             X = 123;
             Y = X * X;
         } else {};
         """
     )
-    result = asir_server.pop_string()
-    print(result)  #=> 15129
-    asir_server.execute_string(
-        """ 
+    assert sv.select() != 0
+    result = sv.pop_string()
+    assert result == "15129"
+    sv.execute_string(
+        """
         if (1) {
             def f() {
                 g();
@@ -110,7 +126,18 @@ if __name__ == "__main__":
         } else {};
         """
     )
-    result = asir_server.pop_string()
-    print(result)
-    #=> error([6,4294967295,evalf : g undefined,[asir_where,[[toplevel,6],[string,f,4]]]])
-    asir_server.shutdown()
+    assert sv.select() != 0
+    result = sv.pop_string()
+    assert (
+        result
+        == "error([7,4294967295,evalf : g undefined,[asir_where,[[toplevel,6],[string,f,4]]]])"
+    )
+    sv.execute_string("fctr(x^20000 - y^20000);")
+    assert sv.select() == 0
+    sv.reset()
+    sv.execute_string("fctr(x^2 - y^2);")
+    assert sv.select() != 0
+    result = sv.pop_string()
+    assert result == "[[1,1],[x-y,1],[x+y,1]]"
+
+    sv.shutdown()

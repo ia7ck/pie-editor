@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "./codebeautify"))
 
 import kivy.app
+import kivy.clock
 import kivy.core.text
 import kivy.core.window
 import kivy.graphics
@@ -16,9 +17,9 @@ import kivy.uix.codeinput
 import kivy.uix.label
 import kivy.uix.popup
 
-from codebeautify import beautifier
 import erroranalyzer
 import server
+from codebeautify import beautifier
 
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
@@ -110,7 +111,18 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     result = kivy.properties.ObjectProperty(None)
     filepath = kivy.properties.StringProperty("")
 
+    def __init__(self, **kwargs):
+        super(Editor, self).__init__(**kwargs)
+        # https://pyky.github.io/kivy-doc-ja/api-kivy.clock.html#kivy.clock.CyClockBase.create_trigger
+        self.clock_event = kivy.clock.Clock.create_trigger(
+            lambda _dt: self.fetch_result(), 1, interval=True
+        )
+
     def run_source_code(self, *args):
+        app.server.reset()
+        self.clock_event.cancel()
+        self.result.output.text = "running ..."
+        self.footer.error_line.text = ""
         selection = self.source_code.selection_text
         server_input = (
             "if (1) { "
@@ -118,12 +130,25 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             + " } else {};"
         )
         app.server.execute_string(server_input)
-        server_output = app.server.pop_string()
-        self.result.output.text = server_output
-        error_line_num = erroranalyzer.get_error_line(server_output)
-        # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
-        self.footer.update_error_line(error_line_num)
-        self.source_code.select_error_line(error_line_num)
+        self.clock_event()
+
+    def fetch_result(self):
+        finished = True if app.server.select() != 0 else False
+        if finished:
+            res = app.server.pop_string()
+            self.result.output.text = res
+            error_line_num = erroranalyzer.get_error_line(res)
+            # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
+            self.footer.update_error_line(error_line_num)
+            self.source_code.select_error_line(error_line_num)
+            self.clock_event.cancel()
+        else:
+            self.result.output.text += " ..."
+
+    def stop_running(self, *args):
+        app.server.reset()
+        self.clock_event.cancel()
+        self.result.output.text = "stopped"
 
     def beautify_source_code(self, *args):
         b = beautifier.Beautifier(self.source_code.text)
