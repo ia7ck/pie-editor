@@ -5,6 +5,8 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "./codebeautify"))
 
+import re
+
 import kivy.app
 import kivy.base
 import kivy.clock
@@ -133,9 +135,10 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.result.output.text = "running ..."
         self.footer.error_line.text = ""
         selection = self.source_code.selection_text
+        text = selection if len(selection) > 0 else self.source_code.text
         server_input = (
             "if (1) { "
-            + (selection if len(selection) > 0 else self.source_code.text)
+            + re.sub(r"\bend\b", "", text)
             + " } else {};"
         )
         app.server.execute_string(server_input)
