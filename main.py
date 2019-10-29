@@ -231,17 +231,27 @@ class Pie(kivy.app.App):
     def __init__(self):
         super(Pie, self).__init__()
         self.editor = None
-        self.server = server.Server()
+        self.server = None
 
     def build(self):
         self.editor = Editor()  # ここで作る
         return self.editor
 
     def on_start(self):
-        self.server.start()
+        try:
+            self.server = server.Server()
+        except OSError as e:
+            print("Asir サーバを起動できませんでした。環境変数 OpenXM_HOME が正しく設定されているか確認してください。")
+            import traceback
+
+            print(traceback.format_exc())
+            self.stop()
+        if self.server:
+            self.server.start()
 
     def on_stop(self):
-        self.server.shutdown()
+        if self.server:
+            self.server.shutdown()
 
 
 if __name__ == "__main__":
