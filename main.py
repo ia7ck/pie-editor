@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "./codebeautify"))
 
 import kivy.app
+import kivy.base
 import kivy.clock
 import kivy.core.text
 import kivy.core.window
@@ -85,6 +86,13 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             self.cursor_row + 1, self.cursor_col + 1
         )
         return super(SourceCode, self).keyboard_on_key_up(_window, _keycode)
+
+    def on_touch_down(self, touch):
+        super(SourceCode, self).on_touch_down(touch)
+        if touch.button == "right":
+            self._show_cut_copy_paste(
+                touch.pos, kivy.base.EventLoop.window, mode="paste"
+            )
 
 
 class Result(kivy.uix.boxlayout.BoxLayout):
