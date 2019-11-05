@@ -18,6 +18,7 @@ import kivy.uix.label
 import kivy.uix.popup
 
 import erroranalyzer
+import filemanager
 import server
 from codebeautify.beautifier import Beautifier
 
@@ -60,18 +61,17 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
         self.select_text(start=start, end=end)
 
     def keyboard_on_key_down(self, _window, keycode, _text, modifiers):
+        e = self.editor
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "enter":
-            self.editor.run_source_code()
+            e.run_source_code()
             return True  # enter で改行しないために必要
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "s":
-            self.editor.handle_file_save()
+            e.handle_file_save()
             return True
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "b":
-            self.editor.beautify_source_code()
+            e.beautify_source_code()
             return True
-        self.editor.footer.update_line_col_from_cursor(
-            self.cursor_row + 1, self.cursor_col + 1
-        )
+        e.footer.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
         # https://pyky.github.io/kivy-doc-ja/examples/gen__demo__kivycatalog__main__py.html
         # https://kivy.org/doc/stable/api-kivy.uix.behaviors.focus.html#kivy.uix.behaviors.focus.FocusBehavior.keyboard_on_key_down
         return super(SourceCode, self).keyboard_on_key_down(
@@ -115,30 +115,33 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     source_code = kivy.properties.ObjectProperty(None)
     footer = kivy.properties.ObjectProperty(None)
     result = kivy.properties.ObjectProperty(None)
-    filepath = kivy.properties.StringProperty("")
 
     def __init__(self, **kwargs):
         super(Editor, self).__init__(**kwargs)
+        self.server = None
+        self.filemanager = filemanager.FileManager(editor=self)
         # https://pyky.github.io/kivy-doc-ja/api-kivy.clock.html#kivy.clock.CyClockBase.create_trigger
         self.clock_event = kivy.clock.Clock.create_trigger(
             lambda _dt: self.fetch_result(), 1, interval=True
         )
 
     def run_source_code(self, *args):
-        app.server.reset()
+        sv = self.server
+        sv.reset()
         self.clock_event.cancel()
         self.result.output.text = "running ..."
         self.footer.error_line.text = ""
         selection = self.source_code.selection_text
         text = selection if len(selection) > 0 else self.source_code.text
         server_input = "if (1) { " + re.sub(r"\bend\b", "", text) + " } else {};"
-        app.server.execute_string(server_input)
+        sv.execute_string(server_input)
         self.clock_event()
 
     def fetch_result(self):
-        finished = True if app.server.select() != 0 else False
+        sv = self.server
+        finished = True if sv.select() != 0 else False
         if finished:
-            res = app.server.pop_string()
+            res = sv.pop_string()
             self.result.output.text = res
             error_line_num = erroranalyzer.get_error_line(res)
             # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
@@ -149,7 +152,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             self.result.output.text += " ..."
 
     def stop_running(self, *args):
-        app.server.reset()
+        self.server.reset()
         self.clock_event.cancel()
         self.result.output.text = "stopped"
 
@@ -164,14 +167,6 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         )
         self.popup.open()
 
-    def load_file(self, filepaths):
-        if len(filepaths) == 0:
-            return
-        with open(filepaths[0]) as f:
-            self.source_code.text = f.read()
-        self.filepath = filepaths[0]
-        self.dismiss_popup()
-
     def show_filename_input_form(self):
         self.popup = kivy.uix.popup.Popup(
             title="Save File",
@@ -181,20 +176,6 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         )
         self.popup.open()
 
-    def write_source_code_to_file(self, filename):
-        filepath = (
-            self.filepath  # 上書き
-            if self.has_file_created()
-            else os.path.join(os.getcwd(), filename)  # 新規作成
-        )
-        try:
-            with open(filepath, "w") as f:
-                f.write(self.source_code.text)
-            self.filepath = filepath
-            self.dismiss_popup()
-        except OSError as e:
-            self.show_save_error(filepath, e.strerror)
-
     def show_save_error(self, filepath, message):
         self.popup.height = FONT_SIZE * 16
         self.popup.content.error_hint.text = "Failed to save: {}\n[color=FF0000]{}[/color]".format(
@@ -203,49 +184,44 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
     def dismiss_popup(self):
         self.popup.dismiss()
-
-    def has_file_created(self):
-        return len(self.filepath) > 0
-
-    def get_filename(self):
-        return os.path.basename(self.filepath)
+        fm = self.filemanager
+        app.title = "Pie -- " + fm.filepath
+        self.footer.filename.text = fm.get_filename()
 
     def handle_file_save(self):  # 上書き or 新規作成
-        if self.has_file_created():
-            self.write_source_code_to_file(self.get_filename())
+        fm = self.filemanager
+        if fm.has_file_created():
+            fm.write_to_file(self.filemanager.get_filename())
         else:
             self.show_filename_input_form()
-
-    def on_filepath(self, *args):
-        app.title = "Pie -- " + self.filepath
-        self.footer.filename.text = self.get_filename()
 
 
 class Pie(kivy.app.App):
     def __init__(self):
         super(Pie, self).__init__()
         self.editor = None
-        self.server = None
 
     def build(self):
         self.editor = Editor()  # ここで作る
         return self.editor
 
     def on_start(self):
+        e = self.editor
         try:
-            self.server = server.Server()
-        except OSError as e:
+            e.server = server.Server()
+        except OSError as err:
             print("Asir サーバを起動できませんでした。環境変数 OpenXM_HOME が正しく設定されているか確認してください。")
             import traceback
 
             print(traceback.format_exc())
             self.stop()
-        if self.server:
-            self.server.start()
+        if e.server:
+            e.server.start()
 
     def on_stop(self):
-        if self.server:
-            self.server.shutdown()
+        e = self.editor
+        if e.server:
+            e.server.shutdown()
 
 
 if __name__ == "__main__":
