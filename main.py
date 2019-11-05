@@ -1,10 +1,6 @@
 # -*- encoding: utf-8 -*-
 
 import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "./codebeautify"))
-
 import re
 
 import kivy.app
@@ -23,8 +19,7 @@ import kivy.uix.popup
 
 import erroranalyzer
 import server
-from codebeautify import beautifier
-
+from codebeautify.beautifier import Beautifier
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
@@ -159,7 +154,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.result.output.text = "stopped"
 
     def beautify_source_code(self, *args):
-        b = beautifier.Beautifier(self.source_code.text)
+        b = Beautifier(self.source_code.text)
         self.source_code.text = b.beautify()
 
     # ファイル関係
