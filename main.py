@@ -136,11 +136,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.footer.error_line.text = ""
         selection = self.source_code.selection_text
         text = selection if len(selection) > 0 else self.source_code.text
-        server_input = (
-            "if (1) { "
-            + re.sub(r"\bend\b", "", text)
-            + " } else {};"
-        )
+        server_input = "if (1) { " + re.sub(r"\bend\b", "", text) + " } else {};"
         app.server.execute_string(server_input)
         self.clock_event()
 
