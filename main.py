@@ -18,6 +18,7 @@ import kivy.uix.label
 import kivy.uix.popup
 
 import erroranalyzer
+import coderunner
 import filemanager
 import server
 from codebeautify.beautifier import Beautifier
@@ -63,7 +64,7 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
     def keyboard_on_key_down(self, _window, keycode, _text, modifiers):
         e = self.editor
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "enter":
-            e.run_source_code()
+            e.coderunner.run_source_code()
             return True  # enter で改行しないために必要
         if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "s":
             e.handle_file_save()
@@ -119,45 +120,16 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     def __init__(self, **kwargs):
         super(Editor, self).__init__(**kwargs)
         self.server = None
+        self.coderunner = coderunner.CodeRunner(editor=self)
         self.filemanager = filemanager.FileManager(editor=self)
         # https://pyky.github.io/kivy-doc-ja/api-kivy.clock.html#kivy.clock.CyClockBase.create_trigger
         self.clock_event = kivy.clock.Clock.create_trigger(
             lambda _dt: self.fetch_result(), 1, interval=True
         )
 
-    def run_source_code(self, *args):
-        sv = self.server
-        sv.reset()
-        self.clock_event.cancel()
-        self.result.output.text = "running ..."
-        self.footer.error_line.text = ""
-        selection = self.source_code.selection_text
-        text = selection if len(selection) > 0 else self.source_code.text
-        server_input = "if (1) { " + re.sub(r"\bend\b", "", text) + " } else {};"
-        sv.execute_string(server_input)
-        self.clock_event()
-
-    def fetch_result(self):
-        sv = self.server
-        finished = True if sv.select() != 0 else False
-        if finished:
-            res = sv.pop_string()
-            self.result.output.text = res
-            error_line_num = erroranalyzer.get_error_line(res)
-            # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
-            self.footer.update_error_line(error_line_num)
-            self.source_code.select_error_line(error_line_num)
-            self.clock_event.cancel()
-        else:
-            self.result.output.text += " ..."
-
-    def stop_running(self, *args):
-        self.server.reset()
-        self.clock_event.cancel()
-        self.result.output.text = "stopped"
-
     def beautify_source_code(self, *args):
         b = Beautifier(self.source_code.text)
+        # TODO: 失敗時に何か表示する
         self.source_code.text = b.beautify()
 
     # ファイル関係

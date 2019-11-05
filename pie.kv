@@ -58,11 +58,11 @@
       ActionButton:
         text: "Run"
         icon: "atlas://data/images/defaulttheme/media-playback-start"
-        on_release: root.editor.run_source_code()
+        on_release: root.editor.coderunner.run_source_code()
       ActionButton:
         text: "Stop"
         icon: "atlas://data/images/defaulttheme/media-playback-stop"
-        on_release: root.editor.stop_running()
+        on_release: root.editor.coderunner.stop_running()
       ActionButton:
         text: "Beautify"
         on_release: root.editor.beautify_source_code()

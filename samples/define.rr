@@ -1,0 +1,4 @@
+#define ABS(x) (x > 0 ? x : -x)
+
+P = -123;
+ABS(P) * 45;
