@@ -18,22 +18,3 @@ def get_error_line(text):
     if len(error_line_numbers) == 0:
         return -1
     return min(error_line_numbers)
-
-
-"""
-def g() {
-    h();
-}
-def f() { 
-    g();
-} 
-f();
-"""
-
-if __name__ == "__main__":
-    assert (
-        get_error_line(
-            "error([7,4294967295,evalf : h undefined,[asir_where,[[toplevel,7],[string,f,5],[string,g,2],[,end,0]]]])"
-        )
-        == 2
-    )
