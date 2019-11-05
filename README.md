@@ -6,6 +6,11 @@
 3. `$ pip install --upgrade pip && pip install -r requirements.txt`
 4. `$ python main.py`
 
+### Test
+
+- All: `python3 -m unittest discover --start-directory tests`
+- Each file: e.g. `python3 -m unittest tests/test_erroranalyzer.py`
+
 ### Keyboard shortcut
 
 - `Ctrl+Enter`: Run source code.
