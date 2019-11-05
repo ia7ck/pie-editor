@@ -11,6 +11,13 @@
 - All: `python3 -m unittest discover --start-directory tests`
 - Each file: e.g. `python3 -m unittest tests/test_erroranalyzer.py`
 
+
+### Support
+
+- Replace macros (#define directives).
+- Suspend execution.
+- Navigate to error line.
+
 ### Keyboard shortcut
 
 - `Ctrl+Enter`: Run source code.
