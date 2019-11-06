@@ -1,2 +1,3 @@
-wheel
-kivy
+# https://kivy.org/doc/stable-1.11.0/installation/installation-linux-venvs.html#installation-in-venv
+Cython==0.29.9
+kivy==1.11.0

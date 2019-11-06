@@ -1,16 +1,20 @@
+```
+$ python3 -V
+Python 3.7.5
+```
+
 ### How to build and run
 
 1. `$ source /path/to/OpenXM_HOME/rc/dot.bashrc`
 2. `$ ./build.sh`
     - `liba.so` is created.
 3. `$ pip install --upgrade pip && pip install -r requirements.txt`
-4. `$ python main.py`
+4. `$ python3 main.py`
 
 ### Test
 
 - All: `python3 -m unittest discover --start-directory tests`
 - Each file: e.g. `python3 -m unittest tests/test_erroranalyzer.py`
-
 
 ### Support
 
