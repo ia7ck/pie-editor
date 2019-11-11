@@ -163,7 +163,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     def handle_file_save(self):  # 上書き or 新規作成
         fm = self.filemanager
         if fm.has_file_created():
-            fm.write_to_file(self.filemanager.get_filename())
+            fm.write_to_file(fm.get_filename())
         else:
             self.show_filename_input_form()
 
