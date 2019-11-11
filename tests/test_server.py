@@ -22,20 +22,24 @@ class TestServer(TestCase):
             } else {};
             """
         )
-        sleep(1)  # 必要?
+        self._wait_1_sec()
         self.assertNotEqual(sv.select(), 0)
         result = sv.pop_string()
         self.assertEqual(result, "15129")
 
         sv.execute_string("fctr(x^20000 - y^20000);")
-        sleep(1)
+        self._wait_1_sec()
         self.assertEqual(sv.select(), 0)
         sv.reset()
         sv.execute_string("fctr(x^2 - y^2);")
-        sleep(1)
+        self._wait_1_sec()
         self.assertNotEqual(sv.select(), 0)
         result = sv.pop_string()
         self.assertEqual(result, "[[1,1],[x-y,1],[x+y,1]]")
+
+    def _wait_1_sec(self):
+        print("sleep 1 sec ... ... ...")
+        sleep(1)
 
     def test_undefined_error(self):
         sv = self.sv

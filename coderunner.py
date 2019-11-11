@@ -1,7 +1,7 @@
 import subprocess
 import re
 
-import erroranalyzer
+import outputanalyzer
 
 
 class CodeRunner:
@@ -13,7 +13,7 @@ class CodeRunner:
         sv = e.server
         sv.reset()
         e.clock_event.cancel()
-        e.result.output.text = "running ..."
+        e.result.text = "running ..."
         e.footer.error_line.text = ""
         selection = e.source_code.selection_text
         text = selection if len(selection) > 0 else e.source_code.text
@@ -41,17 +41,14 @@ class CodeRunner:
         finished = True if sv.select() != 0 else False
         if finished:
             res = sv.pop_string()
-            e.result.output.text = res
-            error_line_num = erroranalyzer.get_error_line(res)
-            # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
-            e.footer.update_error_line(error_line_num)
-            e.source_code.select_error_line(error_line_num)
             e.clock_event.cancel()
+            e.update_result(res)
+            e.show_execute_error(res)
         else:
-            e.result.output.text += " ..."
+            e.result.text += " ..."
 
     def stop_running(self, *args):
         e = self.editor
         e.server.reset()
         e.clock_event.cancel()
-        e.result.output.text = "stopped"
+        e.result.text = "stopped"

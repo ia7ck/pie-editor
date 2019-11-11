@@ -26,24 +26,27 @@
         editor: editor
     Splitter:
       sizable_from: "top"
+      # https://kivy.org/doc/stable/api-kivy.uix.splitter.html#kivy.uix.splitter.Splitter.keep_within_parent
       keep_within_parent: True
       BoxLayout:
         orientation: "vertical"
+        ResultLabel:
+          id: result_label
         Result:
           id: result
+          editor: editor
         Footer:
           id: footer
 
-<Header>:
+<Header@ActionBar>:
   ActionView:
     orientation: "horizontal"
-    size_hint_y: None
-    height: LABEL_FONT_SIZE * 2
     ActionPrevious:
       title: ""
       with_previous: False
+      # kivy の icon を非表示にする
       size_hint: None, None
-      size: 0, 0  # icon を非表示にする
+      size: 0, 0
     ActionGroup:
       text: "File"
       mode: "spinner"
@@ -66,41 +69,46 @@
       ActionButton:
         text: "Beautify"
         on_release: root.editor.beautify_source_code()
+      ActionButton:
+        text: "bar"
+        on_release: root.editor.bar()
 
-<SourceCode>:
+<SourceCode@CodeInput>:
   text: "def f() { g(); } f();"
   cursor_width: 3
   cursor_color: (0.25, 0.25, 0.25, 1)
   cursor_blink: False
+  # https://kivy.org/doc/stable/api-kivy.uix.textinput.html#kivy.uix.textinput.TextInput.use_bubble
   use_bubble: True
-  lexer: lexer.AsirLexer()  # for syntax highlighting
-  background_normal: textinput.TextInput.background_active.defaultvalue  # light background color
-  auto_indent: True  #  効かない??
+  # for syntax highlighting
+  lexer: lexer.AsirLexer()
+  background_normal: textinput.TextInput.background_active.defaultvalue
   on_touch_up: root.editor.footer.update_line_col_from_cursor(root.cursor_row + 1, root.cursor_col + 1)
 
-<Result>:
-  orientation: "vertical"
-  output: output
-  BoxLayout:
-    id: label
-    orientation: "vertical"
-    size_hint_y: None
-    height: LABEL_FONT_SIZE * 2
-    LabelWithBackgroundColor:
-      text: "Output (read only)"
-      background_color: (0.3, 0.3, 0.3, 1)
-      color: (1, 1, 1, 1)
-      text_size: self.size
-      halign: "left"
-      valign: "middle"
-      padding_x: 5
-  TextInput:
-    id: output
-    text: ""
-    readonly: True
-    cursor_width: 0
+
+# Label 単体だと高さを固定できない?ため
+<ResultLabel@BoxLayout>:
+  size_hint_y: None
+  height: LABEL_FONT_SIZE * 2
+  CustomLabel:
+    text: "Output"
+    background_color: (0.3, 0.3, 0.3, 1)
+    color: (1, 1, 1, 1)
+    halign: "left"
+    valign: "middle"
+
+<Result@BoxLayout>:
+  text: ""
+  CustomLabel:
+    id: result
+    text: root.text
+    font_name: "M+ M Type-1 Regular"
+    font_size: CODE_FONT_SIZE
     background_color: (0.1, 0.1, 0.1, 1)
-    foreground_color: (1, 1, 1, 1)
+    color: (1, 1, 1, 1)
+    halign: "left"
+    valign: "top"
+    markup: True
 
 <Footer>:
   orientation: "vertical"
@@ -109,37 +117,36 @@
   error_line: error_line
   filename: filename
   line_col: line_col
-  LabelWithBackgroundColor:
+  CustomLabel:
     id: error_line
     text: ""
     background_color: (0.7, 0.7, 0.7, 1)
     color: (1, 0, 0, 1)
-    text_size: self.size
     halign: "left"
     valign: "middle"
-    padding_x: 5
   BoxLayout:
     orientation: "horizontal"
-    LabelWithBackgroundColor:
+    CustomLabel:
       id: filename
       text: ""
       background_color: (0.9, 0.9, 0.9, 1)
       color: (0, 0, 0, 1)
-      text_size: self.size
       halign: "left"
       valign: "middle"
-      padding_x: 5
-    LabelWithBackgroundColor:
+    CustomLabel:
       id: line_col
       text: "Line:1 Col:1"
       background_color: (0.9, 0.9, 0.9, 1)
       color: (0, 0, 0, 1)
-      text_size: self.size
       halign: "right"
       valign: "middle"
-      padding_x: 5
 
-<LabelWithBackgroundColor>:
+<CustomLabel@Label>:
+  # https://kivy.org/doc/stable/api-kivy.uix.label.html#text-alignment-and-wrapping
+  # text_size, halign, valign を指定する
+  text_size: self.size
+  # 背景色の設定
+  background_color: (0.5, 0.5, 0.5, 1)
   canvas.before:
     Color:
       rgba: root.background_color
@@ -199,10 +206,21 @@
     valign: "middle"
     text_size: self.size
 
+<ImageViewer>:
+  orientation: "vertical"
+  Image:
+    source: root.source
+  Button:
+    text: "Close"
+    size_hint_y: None
+    height: LABEL_FONT_SIZE * 2
+    on_release: root.editor.dismiss_popup()
+
 # 上書きしている
 <Label>:
   font_name: "M+ P Type-1 Regular"
   font_size: LABEL_FONT_SIZE
+  padding_x: 5
 <Popup>:
   title_font: "M+ P Type-1 Regular"
   title_size: TITLE_FONT_SIZE

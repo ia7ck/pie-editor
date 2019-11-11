@@ -14,22 +14,29 @@ import kivy.uix.actionbar
 import kivy.uix.boxlayout
 import kivy.uix.button
 import kivy.uix.codeinput
+import kivy.uix.image
 import kivy.uix.label
 import kivy.uix.popup
+import kivy.utils
 
-import erroranalyzer
 import coderunner
 import filemanager
+import outputanalyzer
 import server
 from codebeautify.beautifier import Beautifier
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
 kivy.core.window.Window.size = (800, 600)
+# https://kivy.org/doc/stable/api-kivy.core.text.html#kivy.core.text.LabelBase.register
 kivy.core.text.LabelBase.register("M+ P Type-1 Regular", "./mplus-1p-regular.ttf")
 kivy.core.text.LabelBase.register("M+ M Type-1 Regular", "./mplus-1m-regular.ttf")
 
 FONT_SIZE = 24  # LABEL_FONT_SIZE in pie.kv
+
+
+class CustomLabel(kivy.uix.label.Label):
+    pass
 
 
 class FileOpenDialog(kivy.uix.boxlayout.BoxLayout):
@@ -40,8 +47,9 @@ class FileSaveDialog(kivy.uix.boxlayout.BoxLayout):
     editor = kivy.properties.ObjectProperty(None)
 
 
-class LabelWithBackgroundColor(kivy.uix.label.Label):
-    background_color = kivy.properties.ListProperty((0.5, 0.5, 0.5, 1))  # default
+class ImageViewer(kivy.uix.boxlayout.BoxLayout):
+    source = kivy.properties.StringProperty("")
+    editor = kivy.properties.ObjectProperty(None)
 
 
 class Header(kivy.uix.actionbar.ActionBar):
@@ -73,7 +81,7 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             e.beautify_source_code()
             return True
         e.footer.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
-        # https://pyky.github.io/kivy-doc-ja/examples/gen__demo__kivycatalog__main__py.html
+        # https://kivy.org/doc/stable/examples/gen__demo__kivycatalog__main__py.html
         # https://kivy.org/doc/stable/api-kivy.uix.behaviors.focus.html#kivy.uix.behaviors.focus.FocusBehavior.keyboard_on_key_down
         return super(SourceCode, self).keyboard_on_key_down(
             _window, keycode, _text, modifiers
@@ -87,14 +95,30 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
 
     def on_touch_down(self, touch):
         super(SourceCode, self).on_touch_down(touch)
-        if touch.button == "right":
-            self._show_cut_copy_paste(
-                touch.pos, kivy.base.EventLoop.window, mode="paste"
-            )
+        y = touch.pos[1]
+        # https://kivy.org/doc/stable/api-kivy.uix.widget.html#kivy.uix.widget.Widget.top
+        if self.y <= y and y <= self.top:  # source_code がクリックされたか
+            if touch.button == "right":
+                self._show_cut_copy_paste(
+                    touch.pos, kivy.base.EventLoop.window, mode="paste"
+                )
 
 
 class Result(kivy.uix.boxlayout.BoxLayout):
-    pass
+    editor = kivy.properties.ObjectProperty(None)
+    text = kivy.properties.StringProperty("")
+
+    def __init__(self, **kwargs):
+        super(Result, self).__init__(**kwargs)
+        self.imagefile_path = ""
+
+    def on_touch_down(self, touch):
+        super(Result, self).on_touch_down(touch)
+        y = touch.pos[1]
+        if self.y <= y and y <= self.top:  # result がクリックされたか
+            if touch.button == "left":
+                if self.imagefile_path:
+                    self.editor.show_image(self.imagefile_path)
 
 
 class Footer(kivy.uix.boxlayout.BoxLayout):
@@ -122,7 +146,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.server = None
         self.coderunner = coderunner.CodeRunner(editor=self)
         self.filemanager = filemanager.FileManager(editor=self)
-        # https://pyky.github.io/kivy-doc-ja/api-kivy.clock.html#kivy.clock.CyClockBase.create_trigger
+        # https://kivy.org/doc/stable/api-kivy.clock.html#kivy.clock.CyClockBase.create_trigger
         self.clock_event = kivy.clock.Clock.create_trigger(
             lambda _dt: self.coderunner.fetch_result(), 1, interval=True
         )
@@ -131,6 +155,24 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         b = Beautifier(self.source_code.text)
         # TODO: 失敗時に何か表示する
         self.source_code.text = b.beautify()
+
+    def show_execute_error(self, res):
+        # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
+        error_line_num = outputanalyzer.find_error_line(res)
+        self.footer.update_error_line(error_line_num)
+        self.source_code.select_error_line(error_line_num)
+
+    def update_result(self, res):
+        r = self.result
+        escape = kivy.utils.escape_markup
+        path = outputanalyzer.find_imagefile_path(res)
+        r.imagefile_path = path
+        if path:
+            # https://kivy.org/doc/stable/api-kivy.utils.html#kivy.utils.escape_markup
+            p = escape(path)
+            r.text = escape(res).replace(p, "[u]" + p + "[/u]")
+        else:
+            r.text = res
 
     # ファイル関係
     def show_files(self):
@@ -154,18 +196,27 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             filepath, message
         )
 
+    def update_footer(self, filepath):
+        # app.title = "Pie -- " + filepath
+        self.footer.filename.text = os.path.basename(filepath)
+
     def dismiss_popup(self):
         self.popup.dismiss()
-        fm = self.filemanager
-        app.title = "Pie -- " + fm.filepath
-        self.footer.filename.text = fm.get_filename()
 
     def handle_file_save(self):  # 上書き or 新規作成
         fm = self.filemanager
         if fm.has_file_created():
-            fm.write_to_file(fm.get_filename())
+            fm.write_to_file(fm.filepath)
         else:
             self.show_filename_input_form()
+
+    def show_image(self, path):
+        self.popup = kivy.uix.popup.Popup(
+            title=path,
+            size_hint=(0.8, 0.8),
+            content=ImageViewer(source=path, editor=self),
+        )
+        self.popup.open()
 
 
 class Pie(kivy.app.App):
