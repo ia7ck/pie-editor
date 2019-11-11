@@ -124,7 +124,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.filemanager = filemanager.FileManager(editor=self)
         # https://pyky.github.io/kivy-doc-ja/api-kivy.clock.html#kivy.clock.CyClockBase.create_trigger
         self.clock_event = kivy.clock.Clock.create_trigger(
-            lambda _dt: self.fetch_result(), 1, interval=True
+            lambda _dt: self.coderunner.fetch_result(), 1, interval=True
         )
 
     def beautify_source_code(self, *args):
