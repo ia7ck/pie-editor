@@ -100,6 +100,10 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
                 )
 
 
+class ResultLabel(kivy.uix.boxlayout.BoxLayout):
+    pass
+
+
 class Result(kivy.uix.boxlayout.BoxLayout):
     editor = kivy.properties.ObjectProperty(None)
     text = kivy.properties.StringProperty("")

@@ -38,7 +38,7 @@
         Footer:
           id: footer
 
-<Header@ActionBar>:
+<Header>:
   ActionView:
     orientation: "horizontal"
     ActionPrevious:
@@ -74,7 +74,7 @@
   font_name: "M+ P Type-1 Regular"
   font_size: LABEL_FONT_SIZE
 
-<SourceCode@CodeInput>:
+<SourceCode>:
   text: "def f() { g(); } f();"
   cursor_width: 3
   cursor_color: (0.25, 0.25, 0.25, 1)
@@ -88,7 +88,7 @@
 
 
 # Label 単体だと高さを固定できない?ため
-<ResultLabel@BoxLayout>:
+<ResultLabel>:
   size_hint_y: None
   height: LABEL_FONT_SIZE * 2
   CustomLabel:
@@ -98,7 +98,7 @@
     halign: "left"
     valign: "middle"
 
-<Result@BoxLayout>:
+<Result>:
   text: ""
   CustomLabel:
     id: result
@@ -111,7 +111,7 @@
     valign: "top"
     markup: True
 
-<Footer@BoxLayout>:
+<Footer>:
   orientation: "vertical"
   size_hint_y: None
   height: LABEL_FONT_SIZE * 3
@@ -158,7 +158,7 @@
       pos: root.pos
       size: root.size
 
-<FileOpenDialog@BoxLayout>:
+<FileOpenDialog>:
   orientation: "vertical"
   FileChooserIconView:
     id: filechooser
@@ -178,7 +178,7 @@
       text: "Open"
       on_release: root.editor.filemanager.load_file(filechooser.selection)
 
-<FileSaveDialog@BoxLayout>:
+<FileSaveDialog>:
   orientation: "vertical"
   filechooser: filechooser
   filepath: filepath
@@ -213,7 +213,7 @@
       text: "Save"
       on_release: root.editor.filemanager.write_to_file(filechooser.path, filepath.text)
 
-<ImageViewer@BoxLayout>:
+<ImageViewer>:
   orientation: "vertical"
   Image:
     source: root.source
