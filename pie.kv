@@ -175,15 +175,22 @@
 
 <FileSaveDialog@BoxLayout>:
   orientation: "vertical"
-  error_hint: error_hint
+  filechooser: filechooser
+  filepath: filepath
   save_button: save_button
+  FileChooserListView:
+    id: filechooser
+    title: "Save File"
+    rootpath: os.getcwd()
+    # https://kivy.org/doc/stable/api-kivy.uix.filechooser.html#usage-example
+    on_selection: root.filepath.text = self.selection and self.selection[0] or ""
   TextInput:
-    id: filename
-    text: "script_{}.rr".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    id: filepath
+    text: ""
     size_hint_y: None
     height: CODE_FONT_SIZE * 2
     multiline: False
-    on_text_validate: root.editor.filemanager.write_to_file(filename.text)
+    on_text_validate: root.editor.filemanager.write_to_file(filechooser.path, self.text)
     cursor_width: 3
     cursor_color: (0.25, 0.25, 0.25, 1)
     cursor_blink: False
@@ -197,14 +204,7 @@
     Button:
       id: save_button
       text: "Save"
-      on_release: root.editor.filemanager.write_to_file(filename.text)
-  Label:
-    id: error_hint
-    text: ""
-    markup: True
-    halign: "left"
-    valign: "middle"
-    text_size: self.size
+      on_release: root.editor.filemanager.write_to_file(filechooser.path, filepath.text)
 
 <ImageViewer@BoxLayout>:
   orientation: "vertical"

@@ -179,18 +179,9 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
     def show_filename_input_form(self):
         self.popup = kivy.uix.popup.Popup(
-            title="Save File",
-            size_hint=(0.8, None),
-            height=FONT_SIZE * 7.5,
-            content=FileSaveDialog(editor=self),
+            title="Save File", size_hint=(0.8, 0.8), content=FileSaveDialog(editor=self)
         )
         self.popup.open()
-
-    def show_save_error(self, filepath, message):
-        self.popup.height = FONT_SIZE * 16
-        self.popup.content.error_hint.text = "Failed to save: {}\n[color=FF0000]{}[/color]".format(
-            filepath, message
-        )
 
     def update_footer(self, filepath):
         # app.title = "Pie -- " + filepath
@@ -202,7 +193,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     def handle_file_save(self):  # 上書き or 新規作成
         fm = self.filemanager
         if fm.has_file_created():
-            fm.write_to_file(fm.filepath)
+            fm.write_to_file(dirname="", filepath=fm.filepath)
         else:
             self.show_filename_input_form()
 

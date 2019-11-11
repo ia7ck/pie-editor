@@ -6,11 +6,11 @@ class FileManager:
         self.editor = editor
         self.filepath = ""
 
-    def load_file(self, filepaths):
+    def load_file(self, filepath_list):
         e = self.editor
-        if len(filepaths) == 0:
+        if len(filepath_list) == 0:
             return
-        path = filepaths[0]
+        path = filepath_list[0]
         try:
             with open(path) as f:
                 e.source_code.text = f.read()
@@ -19,10 +19,9 @@ class FileManager:
             print(err)
             # TODO: read() に失敗したとき何か表示する
 
-    def write_to_file(self, file):
+    def write_to_file(self, dirname, filepath):
         e = self.editor
-        name = os.path.basename(file)
-        path = os.path.join(os.getcwd(), name)
+        path = os.path.join(dirname, filepath)
         if self.has_file_created():
             path = self.filepath  # 上書き保存
         try:
@@ -30,7 +29,8 @@ class FileManager:
                 f.write(e.source_code.text)
                 self.end(path)
         except OSError as err:
-            e.show_save_error(path, err.strerror)
+            print(err)
+            # TODO: write() に失敗したとき何か表示する
 
     def end(self, path):
         self.filepath = path
