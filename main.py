@@ -35,10 +35,6 @@ kivy.core.text.LabelBase.register("M+ M Type-1 Regular", "./mplus-1m-regular.ttf
 FONT_SIZE = 24  # LABEL_FONT_SIZE in pie.kv
 
 
-class CustomLabel(kivy.uix.label.Label):
-    pass
-
-
 class FileOpenDialog(kivy.uix.boxlayout.BoxLayout):
     editor = kivy.properties.ObjectProperty(None)
 

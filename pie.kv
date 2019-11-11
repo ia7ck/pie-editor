@@ -110,7 +110,7 @@
     valign: "top"
     markup: True
 
-<Footer>:
+<Footer@BoxLayout>:
   orientation: "vertical"
   size_hint_y: None
   height: LABEL_FONT_SIZE * 3
@@ -154,7 +154,7 @@
       pos: root.pos
       size: root.size
 
-<FileOpenDialog>:
+<FileOpenDialog@BoxLayout>:
   orientation: "vertical"
   FileChooserListView:
     id: filechooser
@@ -173,7 +173,7 @@
       text: "Open"
       on_release: root.editor.filemanager.load_file(filechooser.selection)
 
-<FileSaveDialog>:
+<FileSaveDialog@BoxLayout>:
   orientation: "vertical"
   error_hint: error_hint
   save_button: save_button
@@ -206,7 +206,7 @@
     valign: "middle"
     text_size: self.size
 
-<ImageViewer>:
+<ImageViewer@BoxLayout>:
   orientation: "vertical"
   Image:
     source: root.source
