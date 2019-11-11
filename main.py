@@ -136,6 +136,8 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     source_code = kivy.properties.ObjectProperty(None)
     footer = kivy.properties.ObjectProperty(None)
     result = kivy.properties.ObjectProperty(None)
+    # https://kivy.org/doc/stable/guide/lang.html#rule-context
+    app = kivy.properties.ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(Editor, self).__init__(**kwargs)
@@ -184,7 +186,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.popup.open()
 
     def update_footer(self, filepath):
-        # app.title = "Pie -- " + filepath
+        app.title = "Pie -- " + filepath
         self.footer.filename.text = os.path.basename(filepath)
 
     def dismiss_popup(self):
