@@ -69,9 +69,10 @@
       ActionButton:
         text: "Beautify"
         on_release: root.editor.beautify_source_code()
-      ActionButton:
-        text: "bar"
-        on_release: root.editor.bar()
+
+<ActionItem>:
+  font_name: "M+ P Type-1 Regular"
+  font_size: LABEL_FONT_SIZE
 
 <SourceCode@CodeInput>:
   text: "def f() { g(); } f();"
@@ -142,6 +143,9 @@
       valign: "middle"
 
 <CustomLabel@Label>:
+  font_name: "M+ P Type-1 Regular"
+  font_size: LABEL_FONT_SIZE
+  padding_x: 5
   # https://kivy.org/doc/stable/api-kivy.uix.label.html#text-alignment-and-wrapping
   # text_size, halign, valign を指定する
   text_size: self.size
@@ -156,17 +160,18 @@
 
 <FileOpenDialog@BoxLayout>:
   orientation: "vertical"
-  FileChooserListView:
+  FileChooserIconView:
     id: filechooser
     title: "Open File"
-    rootpath: os.getcwd()
+    rootpath: os.environ["HOME"]
     on_submit: root.editor.filemanager.load_file(filechooser.selection)
     # filters: ""
   BoxLayout:
     size_hint_y: None
-    height: LABEL_FONT_SIZE * 2
+    height: btn.font_size * 2
     orientation: "horizontal"
     Button:
+      id: btn
       text: "Cancel"
       on_release: root.editor.dismiss_popup()
     Button:
@@ -178,17 +183,18 @@
   filechooser: filechooser
   filepath: filepath
   save_button: save_button
-  FileChooserListView:
+  FileChooserIconView:
     id: filechooser
     title: "Save File"
-    rootpath: os.getcwd()
+    rootpath: os.environ["HOME"]
     # https://kivy.org/doc/stable/api-kivy.uix.filechooser.html#usage-example
     on_selection: root.filepath.text = self.selection and self.selection[0] or ""
   TextInput:
     id: filepath
-    text: ""
+    text: "script_{}.rr".format(datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+    font_size: 20
     size_hint_y: None
-    height: CODE_FONT_SIZE * 2
+    height: self.font_size * 2
     multiline: False
     on_text_validate: root.editor.filemanager.write_to_file(filechooser.path, self.text)
     cursor_width: 3
@@ -196,9 +202,10 @@
     cursor_blink: False
   BoxLayout
     size_hint_y: None
-    height: LABEL_FONT_SIZE * 2
+    height: btn.font_size * 2
     orientation: "horizontal"
     Button:
+      id: btn
       text: "Cancel"
       on_release: root.editor.dismiss_popup()
     Button:
@@ -213,14 +220,11 @@
   Button:
     text: "Close"
     size_hint_y: None
-    height: LABEL_FONT_SIZE * 2
+    height: self.font_size * 2
     on_release: root.editor.dismiss_popup()
 
-# 上書きしている
 <Label>:
   font_name: "M+ P Type-1 Regular"
-  font_size: LABEL_FONT_SIZE
-  padding_x: 5
 <Popup>:
   title_font: "M+ P Type-1 Regular"
   title_size: TITLE_FONT_SIZE
