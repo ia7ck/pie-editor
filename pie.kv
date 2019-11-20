@@ -2,6 +2,7 @@
 #:import textinput kivy.uix.textinput
 #:import os os
 #:import datetime datetime
+#:import webbrowser webbrowser
 
 #:set LABEL_FONT_SIZE 20
 #:set TITLE_FONT_SIZE 24
@@ -69,6 +70,17 @@
       ActionButton:
         text: "Beautify"
         on_release: root.editor.beautify_source_code()
+    ActionGroup:
+      text: "Links"
+      mode: "spinner"
+      dropdown_width: 250
+      ActionButton:
+        text: "Asir Manual"
+        # https://docs.python.org/ja/3/library/webbrowser.html
+        on_release: webbrowser.open("http://www.math.kobe-u.ac.jp/OpenXM/Current/doc/asir2000/html-ja/man/man.html")
+      ActionButton:
+        text: "Asir-Contrib Manual"
+        on_release: webbrowser.open("http://www.math.kobe-u.ac.jp/OpenXM/Current/doc/asir-contrib/ja/cman-html/cman-ja.html")
 
 <ActionItem>:
   font_name: "M+ P Type-1 Regular"
