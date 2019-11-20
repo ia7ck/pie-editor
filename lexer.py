@@ -5,11 +5,12 @@
 import pygments.lexer
 import pygments.token
 
-
-# http://www.math.kobe-u.ac.jp/Asir/cfep/html-ja_JP.utf8/html-ja/man_23.html#SEC23
+# https://pygments.org/docs/lexerdevelopment.html#regexlexer
+# https://pygments.org/docs/tokens.html
 class AsirLexer(pygments.lexer.RegexLexer):
     tokens = {
         "root": [
+            # http://www.math.kobe-u.ac.jp/OpenXM/Current/doc/asir2000/html-ja/man/man_20.html
             (
                 r"\b(break|continue|do|else|extern|for|if|return|static|struct|while)\b",  # \b は fore とかにマッチしないために必要
                 pygments.token.Keyword,
@@ -22,7 +23,8 @@ class AsirLexer(pygments.lexer.RegexLexer):
                 r"\b(car|cdr|getopt|newstruct|map|pari|quote|recmap|timer)\b",
                 pygments.token.Name.Builtin,
             ),
-            (r"/\*", pygments.token.Comment.Multiline, "comment"),
+            (r"/\*.*?\*/", pygments.token.Comment.Multiline),
+            (r"//.*$", pygments.token.Comment.Singleline),
             (r'"', pygments.token.Literal.String, "string"),
             (r"[A-Z][A-Za-z0-9_]*", pygments.token.Name.Variable),
             (
@@ -36,11 +38,7 @@ class AsirLexer(pygments.lexer.RegexLexer):
             (r"[a-z][A-Za-z0-9_]*", pygments.token.Name.Constant),  # 不定元
             (r"[0-9]+", pygments.token.Literal.Number),
         ],
-        "comment": [
-            (r"[^\*/]", pygments.token.Comment.Multiline),
-            (r"\*/", pygments.token.Comment.Multiline, "#pop"),  # 入れ子は無し
-            (r"[\*/]", pygments.token.Comment.Multiline),
-        ],
+        # https://pygments.org/docs/lexerdevelopment.html#changing-states
         "string": [
             (r'[^"]', pygments.token.Literal.String),
             (r'"', pygments.token.Literal.String, "#pop"),
