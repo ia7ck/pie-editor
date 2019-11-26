@@ -153,6 +153,15 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             lambda _dt: self.coderunner.fetch_result(), 1, interval=True
         )
 
+    def open_link(self, url):
+        import locale, webbrowser
+
+        lang_code = locale.getlocale()[0]
+        if lang_code != "ja_JP":
+            url = url.replace("ja", "en")
+        # https://docs.python.org/ja/3/library/webbrowser.html
+        webbrowser.open(url)
+
     def beautify_source_code(self, *args):
         b = Beautifier(self.source_code.text)
         # TODO: 失敗時に何か表示する
