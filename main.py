@@ -4,6 +4,7 @@ import locale
 import os
 import re
 import webbrowser
+import urllib.request
 
 import kivy.app
 import kivy.base
@@ -32,7 +33,7 @@ from codebeautify.beautifier import Beautifier
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
-kivy.core.window.Window.size = (800, 600)
+kivy.core.window.Window.size = (900, 600)
 # https://kivy.org/doc/stable/api-kivy.core.text.html#kivy.core.text.LabelBase.register
 kivy.core.text.LabelBase.register("M+ P Type-1 Regular", "./mplus-1p-regular.ttf")
 kivy.core.text.LabelBase.register("M+ M Type-1 Regular", "./mplus-1m-regular.ttf")
@@ -184,7 +185,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
                 ),
                 outfile=f,
             )
-            webbrowser.open(os.path.join(os.getcwd(), "output.html"))
+            webbrowser.open("file:" + urllib.request.pathname2url(path))
 
     def copy_to_clipboard(self):
         kivy.core.clipboard.Clipboard.copy(self.result.text)
