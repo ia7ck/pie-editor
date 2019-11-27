@@ -13,10 +13,6 @@ class AsirLexer(pygments.lexers.c_cpp.CFamilyLexer):
     tokens = {
         "statements": [
             (
-                r"\b(break|continue|do|else|extern|for|if|return|static|struct|while)\b",  # \b は fore とかにマッチしないために必要
-                pygments.token.Keyword,
-            ),
-            (
                 r"\b(def|endmodule|function|global|local|localf|module)\b",
                 pygments.token.Keyword,
             ),
