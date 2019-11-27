@@ -30,8 +30,9 @@
       keep_within_parent: True
       BoxLayout:
         orientation: "vertical"
-        ResultLabel:
-          id: result_label
+        ResultHeader:
+          id: result_header
+          editor: editor
         Result:
           id: result
           editor: editor
@@ -101,7 +102,8 @@
 
 
 # Label 単体だと高さを固定できない?ため
-<ResultLabel>:
+<ResultHeader>:
+  orientation: "horizontal"
   size_hint_y: None
   height: LABEL_FONT_SIZE * 2
   CustomLabel:
@@ -110,6 +112,11 @@
     color: (1, 1, 1, 1)
     halign: "left"
     valign: "middle"
+  Button:
+    size_hint_x: 0.2
+    text: "Copy"
+    on_release: root.editor.copy_to_clipboard()
+
 
 <Result>:
   text: ""

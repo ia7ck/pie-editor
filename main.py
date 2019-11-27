@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*-
 
+import locale
 import os
 import re
+import webbrowser
 
 import kivy.app
 import kivy.base
@@ -9,6 +11,7 @@ import kivy.clock
 import kivy.core.text
 import kivy.core.window
 import kivy.graphics
+import kivy.core.clipboard
 import kivy.properties
 import kivy.uix.actionbar
 import kivy.uix.boxlayout
@@ -18,7 +21,9 @@ import kivy.uix.image
 import kivy.uix.label
 import kivy.uix.popup
 import kivy.utils
+import pygments
 
+import asirlexer
 import coderunner
 import filemanager
 import outputanalyzer
@@ -100,7 +105,7 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
                 )
 
 
-class ResultLabel(kivy.uix.boxlayout.BoxLayout):
+class ResultHeader(kivy.uix.boxlayout.BoxLayout):
     pass
 
 
@@ -154,22 +159,18 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         )
 
     def open_link(self, url):
-        import locale, webbrowser
-
         lang_code = locale.getlocale()[0]
         if lang_code != "ja_JP":
             url = url.replace("ja", "en")
         # https://docs.python.org/ja/3/library/webbrowser.html
         webbrowser.open(url)
 
-    def beautify_source_code(self, *args):
+    def beautify_source_code(self):
         b = Beautifier(self.source_code.text)
         # TODO: 失敗時に何か表示する
         self.source_code.text = b.beautify()
 
     def generate_html(self):
-        import pygments, asirlexer, webbrowser
-
         path = os.path.join(os.environ["HOME"], "output.html")
         current_file_path = self.filemanager.filepath
         if current_file_path:
@@ -184,6 +185,9 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
                 outfile=f,
             )
             webbrowser.open(os.path.join(os.getcwd(), "output.html"))
+
+    def copy_to_clipboard(self):
+        kivy.core.clipboard.Clipboard.copy(self.result.text)
 
     def show_execute_error(self, res):
         # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
