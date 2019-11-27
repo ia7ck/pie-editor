@@ -1,4 +1,4 @@
-#:import lexer lexer
+#:import asirlexer asirlexer
 #:import textinput kivy.uix.textinput
 #:import os os
 #:import datetime datetime
@@ -69,6 +69,9 @@
       ActionButton:
         text: "Beautify"
         on_release: root.editor.beautify_source_code()
+      ActionButton:
+        text: "to HTML"
+        on_release: root.editor.generate_html()
     ActionGroup:
       text: "Links"
       mode: "spinner"
@@ -85,14 +88,14 @@
   font_size: LABEL_FONT_SIZE
 
 <SourceCode>:
-  text: "def f() { g(); } f();"
+  text: "def f() { Ax = (x + 1) ^ 2/* コメント */ g(); } f();"
   cursor_width: 3
   cursor_color: (0.25, 0.25, 0.25, 1)
   cursor_blink: False
   # https://kivy.org/doc/stable/api-kivy.uix.textinput.html#kivy.uix.textinput.TextInput.use_bubble
   use_bubble: True
   # for syntax highlighting
-  lexer: lexer.AsirLexer()
+  lexer: asirlexer.AsirLexer()
   background_normal: textinput.TextInput.background_active.defaultvalue
   on_touch_up: root.editor.footer.update_line_col_from_cursor(root.cursor_row + 1, root.cursor_col + 1)
 

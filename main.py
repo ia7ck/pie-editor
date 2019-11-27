@@ -167,6 +167,24 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         # TODO: 失敗時に何か表示する
         self.source_code.text = b.beautify()
 
+    def generate_html(self):
+        import pygments, asirlexer, webbrowser
+
+        path = os.path.join(os.environ["HOME"], "output.html")
+        current_file_path = self.filemanager.filepath
+        if current_file_path:
+            path = os.path.splitext(current_file_path)[0] + ".html"
+        with open(path, "w") as f:
+            pygments.highlight(
+                self.source_code.text,
+                asirlexer.AsirLexer(),
+                pygments.formatters.get_formatter_by_name(
+                    "html", linenos=True, full=True
+                ),
+                outfile=f,
+            )
+            webbrowser.open(os.path.join(os.getcwd(), "output.html"))
+
     def show_execute_error(self, res):
         # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
         error_line_num = outputanalyzer.find_error_line(res)
