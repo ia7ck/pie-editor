@@ -228,6 +228,12 @@
 
 <ImageViewer>:
   orientation: "vertical"
+  canvas.before:
+    Color:
+      rgb: (1, 1, 1)
+    Rectangle:
+      size: self.size
+      pos: self.pos
   Image:
     source: root.source
   Button:

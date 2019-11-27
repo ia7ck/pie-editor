@@ -1,0 +1,1 @@
+print_png_form(poly_factor(x^100 - y^100));
