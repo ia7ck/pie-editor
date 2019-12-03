@@ -23,3 +23,8 @@ def f() {
     return 0;
 }
 ```
+
+### Test
+```sh
+$ python -m unittest discover -s tests
+```
