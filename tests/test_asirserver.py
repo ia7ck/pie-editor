@@ -1,7 +1,7 @@
 from time import sleep
 from unittest import TestCase
 
-from server import Server
+from asirserver import Server
 
 
 class TestServer(TestCase):

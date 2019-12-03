@@ -28,7 +28,7 @@ import asirlexer
 import coderunner
 import filemanager
 import outputanalyzer
-import server
+import asirserver
 from codebeautify.beautifier import Beautifier
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
@@ -256,7 +256,7 @@ class Pie(kivy.app.App):
     def on_start(self):
         e = self.editor
         try:
-            e.server = server.Server()
+            e.server = asirserver.Server()
         except OSError as err:
             print("Asir サーバを起動できませんでした。環境変数 OpenXM_HOME が正しく設定されているか確認してください。")
             import traceback
