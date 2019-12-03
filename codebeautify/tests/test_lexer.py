@@ -103,17 +103,17 @@ class TestLexer(TestCase):
             le.read_token()
 
     def test_detect_error_line(self):
-        i = """A;
+        i = """
+        A;
         /*
           comment
         */
         "str ing
-        C
         """
-        le = Lexer(i)
+        le = Lexer(dedent(i).strip())
         le.read_token()  # A
         le.read_token()  # ;
         le.read_token()  # /* comment */
         with self.assertRaises(AsirSyntaxError) as err:
             le.read_token()
-        self.assertEqual(str(err.exception), "Expect: '\"', got: 'None' at line 6")
+        self.assertEqual(str(err.exception), "Expect: '\"', got: 'None' at line 5")

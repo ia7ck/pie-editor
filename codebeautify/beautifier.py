@@ -15,7 +15,7 @@ class Beautifier:
         self.depth = 0
 
     def append_current_line(self):
-        if len(self.current_line) == 0:
+        if len(self.current_line) == 0:  # 空行は無視する
             return
         self.output_lines.append(
             ((" " * (self.depth * 4)) + self.current_line).rstrip()
@@ -33,7 +33,7 @@ class Beautifier:
         self.append_current_line()
 
     def append_blockcomment(self, comment):
-        self.append_current_line() # 念のため
+        self.append_current_line()  # 念のため
         if len(comment.splitlines()) == 1:  # /* comment */
             self.append_content(comment)
             self.append_current_line()
@@ -101,6 +101,8 @@ class Beautifier:
             elif t.token_type == Token.RBRACE:
                 self.append_current_line()
                 self.depth -= 1
+                if self.depth < 0:
+                    raise AsirSyntaxError("Too many right brace '}'")
                 self.append_content("}")
                 self.append_current_line()
             elif t.token_type == Token.LBRACKET:
@@ -157,14 +159,20 @@ class Beautifier:
                     )
                 )
             prev = t
+        if self.depth > 0:
+            raise AsirSyntaxError("Missing right brace '}'")
         if len(self.current_line) >= 1:
             self.append_current_line()
         return "\n".join(self.output_lines).strip()
 
 
 if __name__ == "__main__":
-    import sys
+    from sys import stdin, stderr
 
-    text = sys.stdin.read()
-    f = Beautifier(text)
-    print(f.beautify())
+    text = stdin.read()
+    try:
+        f = Beautifier(text)
+        result = f.beautify()
+        print(result)
+    except AsirSyntaxError as err:
+        print(err, file=stderr)

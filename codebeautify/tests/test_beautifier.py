@@ -1,6 +1,7 @@
 from textwrap import dedent
 from unittest import TestCase
 
+from _exception import AsirSyntaxError
 from beautifier import Beautifier
 
 
@@ -10,7 +11,7 @@ class TestBeautifier(TestCase):
         return b.beautify()
 
     def _test(self, input_text, output_text):
-        result_1 = self._beautify(dedent(input_text).strip())  # strip() していい?
+        result_1 = self._beautify(dedent(input_text).strip())
         self.assertEqual(result_1, dedent(output_text).strip())
         result_2 = self._beautify(result_1)
         self.assertEqual(result_2, result_1)
@@ -233,3 +234,17 @@ class TestBeautifier(TestCase):
         ]
         for i, o in testcases:
             self._test(i, o)
+
+    def test_error_unbalanced_brace(self):
+        testcases = [
+            """
+            if (1) {
+            else {
+              //
+            }
+            """,
+            "for (;;) {}}}",
+        ]
+        for i in testcases:
+            with self.assertRaises(AsirSyntaxError):
+                self._beautify(dedent(i).strip())

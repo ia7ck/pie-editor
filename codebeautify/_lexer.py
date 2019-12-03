@@ -158,6 +158,6 @@ class Lexer:
         total = 0
         for i in range(len(lines)):
             if total <= self.i and self.i < total + len(lines[i]):
-                return i
+                return i + 1
             total += len(lines[i])
         return -1
