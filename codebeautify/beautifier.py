@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-from _token import Token
+from _exception import AsirSyntaxError
 from _lexer import Lexer
+from _token import Token
 
 
 class Beautifier:
@@ -29,13 +30,13 @@ class Beautifier:
 
     def append_linecomment(self, comment, prev_token_type):
         if prev_token_type in {Token.SEMICOLON, Token.END}:
-            self.output_lines[-1] += " " + comment
+            self.output_lines[-1] += " " + comment  # ; // comment
         else:
             self.append_content(comment)
-            self.append_current_line()
+            self.append_current_line()  # { // comment
 
     def append_blockcomment(self, comment):
-        if len(comment.splitlines()) == 1:  # 一行コメント
+        if len(comment.splitlines()) == 1:  # /* comment */
             self.append_current_line()
             self.append_content(comment, " ")
             self.append_current_line()
@@ -44,11 +45,18 @@ class Beautifier:
             self.append_content("/*")
             self.append_current_line()
             lines = comment[2:-2].splitlines()
+            # /*  com
+            #       ment */
+            # --> [com, ment]
             for ln in lines:
                 if len(ln.strip()) >= 1:
                     self.output_lines.append(ln.rstrip())
             self.append_content("*/")
             self.append_current_line()
+            # /*
+            #   com
+            #       ment
+            # */
 
     def beautify(self):
         prev = Token("", "")
@@ -64,9 +72,9 @@ class Beautifier:
                     self.append_content("!")  # 前置
                 elif t.content in {"++", "--"}:
                     if prev.token_type == Token.OPERATOR:
-                        self.append_content(t.content, " ")
+                        self.append_content(t.content, " ")  # ... * ++
                     else:
-                        self.append_after_rstrip(t.content, " ")
+                        self.append_after_rstrip(t.content, " ")  # A++ など
                 elif t.content == "-":
                     if prev.token_type in {
                         "",
@@ -74,20 +82,20 @@ class Beautifier:
                         Token.SEMICOLON,
                         Token.LPAR,
                     }:
-                        self.append_content("-")  # 前置
+                        self.append_content("-")  # ... (-
                     elif prev.content in {"=", "==", "<", "<=", ">", ">="}:
-                        self.append_content("-")  # 前置
+                        self.append_content("-")  # ... == -
                     else:
                         self.append_content("-", " ")
                 else:
                     self.append_content(t.content, " ")
             elif t.token_type == Token.LPAR:
                 if prev.content in {"for", "if"}:
-                    self.append_content("(")
+                    self.append_content("(")  # ... for (
                 elif prev.token_type == Token.WORD:  # 関数呼び出し
-                    self.append_after_rstrip("(")
+                    self.append_after_rstrip("(")  # ... func(
                 else:
-                    self.append_content("(")
+                    self.append_content("(")  # ... + (
             elif t.token_type == Token.RPAR:
                 self.append_after_rstrip(")", " ")
             elif t.token_type == Token.LBRACE:
@@ -101,9 +109,9 @@ class Beautifier:
                 self.append_current_line()
             elif t.token_type == Token.LBRACKET:
                 if prev.token_type == Token.WORD:  # 添字アクセス
-                    self.append_after_rstrip("[")
+                    self.append_after_rstrip("[")  # ... arr[
                 else:
-                    self.append_content("[")
+                    self.append_content("[")  # ... = [
             elif t.token_type == Token.RBRACKET:
                 self.append_after_rstrip("]")
             elif t.token_type == Token.COMMA:
@@ -113,7 +121,7 @@ class Beautifier:
                     semicolon_cnt += 1
                     if semicolon_cnt == 2:
                         inside_for = False
-                    self.append_after_rstrip(";", " ")
+                    self.append_after_rstrip(";", " ")  # for(a; b;
                 else:
                     self.append_after_rstrip(";")
                     self.append_current_line()
@@ -127,11 +135,16 @@ class Beautifier:
                     if self.output_lines[-1].lstrip(" ") == "}":
                         self.output_lines.pop()
                         self.append_content("}" + " " + "else", " ")
+                        # if (cond) {
+                        #
+                        # } else
                     else:
                         self.append_content("else", " ")
+                        # if (cond) return 1;
+                        # else
                 else:
                     if prev.content in {"++", "--"}:
-                        self.append_after_rstrip(t.content, " ")
+                        self.append_after_rstrip(t.content, " ")  # ... ++a
                     else:
                         self.append_content(t.content, " ")
                         if t.content == "for":
@@ -142,8 +155,10 @@ class Beautifier:
                     self.append_current_line()
                 self.output_lines.append(t.content)  # インデント無し
             else:
-                assert False, "unknown token type: {}, content: '{}'".format(
-                    t.token_type, t.content
+                raise AsirSyntaxError(  # ?
+                    "Unknown token. type: {}, content: '{}'".format(
+                        t.token_type, t.content
+                    )
                 )
             prev = t
         if len(self.current_line) >= 1:

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from sys import stderr
 
+from _exception import AsirSyntaxError
 from _token import Token
 
 
@@ -19,7 +21,7 @@ class Lexer:
 
     def advance(self):
         if self.ch is None:
-            print("[log] self.ch is None")
+            stderr.write("[log] self.ch is None")
             return
         self.ch = None if self.i + 1 >= self.n else self.text[self.i + 1]
         self.i += 1
@@ -46,7 +48,12 @@ class Lexer:
         begin = self.i
         while self.ch and self.next_two_char() != "*/":
             self.advance()
-        assert self.next_two_char() == "*/", "not found: '*/'"
+        if self.next_two_char() != "*/":
+            raise AsirSyntaxError(
+                "Expect: '*/', got: '{}' at line {}".format(
+                    self.next_two_char(), self.detect_line_number()
+                )
+            )
         self.advance()
         self.advance()
         return Token(Token.BLOCKCOMMENT, self.text[begin : self.i])
@@ -62,8 +69,15 @@ class Lexer:
         begin = self.i
         self.advance()
         while self.ch and self.ch != '"':
+            if self.ch == "\\":  # escape
+                self.advance()
             self.advance()
-        assert self.ch == '"', "\ngot: '{}'\nwant: '\"'".format(self.ch)
+        if self.ch != '"':
+            raise AsirSyntaxError(
+                "Expect: '\"', got: '{}' at line {}".format(
+                    self.ch, self.detect_line_number()
+                )
+            )
         self.advance()
         return Token(Token.STRING, self.text[begin : self.i])
 
@@ -86,7 +100,12 @@ class Lexer:
             if self.ch in {"?", ":"}:
                 t = Token(Token.OPERATOR, self.ch)
             elif self.ch == "&":
-                assert self.next_char() == "&"
+                if self.next_char() != "&":
+                    raise AsirSyntaxError(
+                        "Expect: '&', got: '{}' at line {}".format(
+                            self.next_char(), self.detect_line_number()
+                        )
+                    )
                 t = Token(Token.OPERATOR, "&&")
                 self.advance()
             elif self.ch == "|":
@@ -133,3 +152,12 @@ class Lexer:
             return self.read_word()
         self.advance()
         return t
+
+    def detect_line_number(self):
+        lines = self.text.splitlines(keepends=True)
+        total = 0
+        for i in range(len(lines)):
+            if total <= self.i and self.i < total + len(lines[i]):
+                return i
+            total += len(lines[i])
+        return -1

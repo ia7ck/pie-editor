@@ -3,6 +3,7 @@ from textwrap import dedent
 
 from _lexer import Lexer
 from _token import Token
+from _exception import AsirSyntaxError
 
 
 class TestLexer(TestCase):
@@ -10,7 +11,7 @@ class TestLexer(TestCase):
         input_text = """
             A+ B = -123;
             (1 *--2)   /-3++;
-            Msg = "  msg000"
+            Msg = "  msg0 \\" 00"
             flag =! true?1:0!=   false
             {eval(@pi)}
             //comment
@@ -39,7 +40,7 @@ class TestLexer(TestCase):
             [Token.SEMICOLON, ";"],
             [Token.WORD, "Msg"],
             [Token.OPERATOR, "="],
-            [Token.STRING, '"  msg000"'],
+            [Token.STRING, '"  msg0 \\" 00"'],
             [Token.WORD, "flag"],
             [Token.OPERATOR, "="],
             [Token.OPERATOR, "!"],
@@ -80,3 +81,39 @@ class TestLexer(TestCase):
             token = le.read_token()
             self.assertEqual(token.token_type, tt)
             self.assertEqual(token.content, c)
+
+    def test_error_closing_comment(self):
+        i = "/* comment "
+        le = Lexer(i)
+        # https://docs.python.org/ja/3/library/unittest.html#unittest.TestCase.assertRaises
+        with self.assertRaises(AsirSyntaxError):
+            le.read_token()
+
+    def test_error_closing_comment(self):
+        i = '"str ing '
+        le = Lexer(i)
+        with self.assertRaises(AsirSyntaxError):
+            le.read_token()
+
+    def test_error_andand_operator(self):
+        i = "true & false"
+        le = Lexer(i)
+        le.read_token()  # true
+        with self.assertRaises(AsirSyntaxError):
+            le.read_token()
+
+    def test_detect_error_line(self):
+        i = """A;
+        /*
+          comment
+        */
+        "str ing
+        C
+        """
+        le = Lexer(i)
+        le.read_token()  # A
+        le.read_token()  # ;
+        le.read_token()  # /* comment */
+        with self.assertRaises(AsirSyntaxError) as err:
+            le.read_token()
+        self.assertEqual(str(err.exception), "Expect: '\"', got: 'None' at line 6")
