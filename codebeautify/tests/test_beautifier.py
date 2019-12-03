@@ -46,6 +46,7 @@ class TestBeautifier(TestCase):
         testcases = [
             ("A= [1,  2, - 3] ;", "A = [1, 2, -3];"),
             ("A[(1-1)];", "A[(1 - 1)];"),
+            ("A[     0]*=1;", "A[0] *= 1;"),
         ]
         for i, o in testcases:
             self._test(i, o)
@@ -129,8 +130,10 @@ class TestBeautifier(TestCase):
                 B;//single line2
                 """,
                 """
-                A; //   single line
-                B; //single line2
+                A;
+                //   single line
+                B;
+                //single line2
                 """,
             ),
             (
@@ -173,8 +176,10 @@ class TestBeautifier(TestCase):
                 end $
                 """,
                 """
-                module my_module$ // c
-                localf myfunc$ //   c2
+                module my_module$
+                // c
+                localf myfunc$
+                //   c2
                 endmodule$
                 end$
                 """,

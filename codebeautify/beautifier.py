@@ -29,19 +29,15 @@ class Beautifier:
         self.current_line = self.current_line.rstrip(" ") + content + trailing
 
     def append_linecomment(self, comment, prev_token_type):
-        if prev_token_type in {Token.SEMICOLON, Token.END}:
-            self.output_lines[-1] += " " + comment  # ; // comment
-        else:
-            self.append_content(comment)
-            self.append_current_line()  # { // comment
+        self.append_content(comment)
+        self.append_current_line()
 
     def append_blockcomment(self, comment):
+        self.append_current_line() # 念のため
         if len(comment.splitlines()) == 1:  # /* comment */
-            self.append_current_line()
-            self.append_content(comment, " ")
+            self.append_content(comment)
             self.append_current_line()
         else:
-            self.append_current_line()
             self.append_content("/*")
             self.append_current_line()
             lines = comment[2:-2].splitlines()
@@ -113,7 +109,7 @@ class Beautifier:
                 else:
                     self.append_content("[")  # ... = [
             elif t.token_type == Token.RBRACKET:
-                self.append_after_rstrip("]")
+                self.append_after_rstrip("]", " ")
             elif t.token_type == Token.COMMA:
                 self.append_after_rstrip(",", " ")
             elif t.token_type == Token.SEMICOLON:
