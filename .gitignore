@@ -184,3 +184,5 @@ dmypy.json
 
 
 py2-venv/
+codebeautify/samples/src/
+codebeautify/samples/dest/
