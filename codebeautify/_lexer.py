@@ -16,6 +16,8 @@ class Lexer:
         self.ch = self.text[0]  # text[i] == ch
         self.delims = set(list("+-*/%^=,:;$(){}!?<>[]&|"))
 
+        self.depth = 0  # for exception
+
     def is_end(self):
         return self.ch is None
 
@@ -23,7 +25,11 @@ class Lexer:
         if self.ch is None:
             stderr.write("[log] self.ch is None")
             return
-        self.ch = None if self.i + 1 >= self.n else self.text[self.i + 1]
+        if self.i + 1 < self.n:
+            self.ch = self.text[self.i + 1]
+        else:
+            self.ch = None
+            self.ensure_brace_matching()
         self.i += 1
         return self.ch
 
@@ -131,8 +137,11 @@ class Lexer:
         elif self.ch == ")":
             t = Token(Token.RPAR, ")")
         elif self.ch == "{":
+            self.depth += 1
             t = Token(Token.LBRACE, "{")
         elif self.ch == "}":
+            self.depth -= 1
+            self.ensure_positive_depth()
             t = Token(Token.RBRACE, "}")
         elif self.ch == "[":
             t = Token(Token.LBRACKET, "[")
@@ -161,3 +170,13 @@ class Lexer:
                 return i + 1
             total += len(lines[i])
         return -1
+
+    def ensure_positive_depth(self):
+        if self.depth < 0:
+            raise AsirSyntaxError(
+                "Found extra right brace '}' at line " + str(self.detect_line_number())
+            )
+
+    def ensure_brace_matching(self):
+        if self.depth > 0:
+            raise AsirSyntaxError("Missing right brace '}'")

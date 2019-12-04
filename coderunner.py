@@ -14,7 +14,7 @@ class CodeRunner:
         sv.reset()
         e.clock_event.cancel()
         e.result.text = "running ..."
-        e.footer.error_line.text = ""
+        e.footer.error_message.text = ""
         selection = e.source_code.selection_text
         text = selection if len(selection) > 0 else e.source_code.text
         server_input = (

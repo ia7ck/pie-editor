@@ -3,16 +3,16 @@
 import locale
 import os
 import re
-import webbrowser
 import urllib.request
+import webbrowser
 
 import kivy.app
 import kivy.base
 import kivy.clock
+import kivy.core.clipboard
 import kivy.core.text
 import kivy.core.window
 import kivy.graphics
-import kivy.core.clipboard
 import kivy.properties
 import kivy.uix.actionbar
 import kivy.uix.boxlayout
@@ -25,10 +25,11 @@ import kivy.utils
 import pygments
 
 import asirlexer
+import asirserver
 import coderunner
 import filemanager
 import outputanalyzer
-import asirserver
+from codebeautify.beautifier import AsirSyntaxError
 from codebeautify.beautifier import Beautifier
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
@@ -128,14 +129,14 @@ class Result(kivy.uix.boxlayout.BoxLayout):
 
 
 class Footer(kivy.uix.boxlayout.BoxLayout):
-    error_line = kivy.properties.ObjectProperty(None)
+    error_message = kivy.properties.ObjectProperty(None)
     line_col = kivy.properties.ObjectProperty(None)
 
-    def update_error_line(self, error_line_num):
+    def show_error_line_number(self, error_line_num):
         if error_line_num == -1:
-            self.error_line.text = ""
+            self.error_message.text = ""
         else:
-            self.error_line.text = "Error at Line {}".format(error_line_num)
+            self.error_message.text = "Error at Line {}".format(error_line_num)
 
     def update_line_col_from_cursor(self, new_line, new_col):
         self.line_col.text = "Line:{} Col:{}".format(new_line, new_col)
@@ -167,9 +168,11 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         webbrowser.open(url)
 
     def beautify_source_code(self):
-        b = Beautifier(self.source_code.text)
-        # TODO: 失敗時に何か表示する
-        self.source_code.text = b.beautify()
+        try:
+            b = Beautifier(self.source_code.text)
+            self.source_code.text = b.beautify()
+        except AsirSyntaxError as err:
+            self.footer.error_message.text = err.message
 
     def generate_html(self):
         path = os.path.join(os.environ["HOME"], "output.html")
@@ -193,7 +196,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     def show_execute_error(self, res):
         # TODO: selection 部分だけ実行したときにエラー行がずれるので直す
         error_line_num = outputanalyzer.find_error_line(res)
-        self.footer.update_error_line(error_line_num)
+        self.footer.show_error_line_number(error_line_num)
         self.source_code.select_error_line(error_line_num)
 
     def update_result(self, res):
