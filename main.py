@@ -168,9 +168,11 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         webbrowser.open(url)
 
     def beautify_source_code(self):
+        c = self.source_code.cursor
         try:
             b = Beautifier(self.source_code.text)
             self.source_code.text = b.beautify()
+            self.source_code.cursor = c
         except AsirSyntaxError as err:
             self.footer.error_message.text = err.message
 
