@@ -96,15 +96,14 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
         )
         return super(SourceCode, self).keyboard_on_key_up(_window, _keycode)
 
-    def on_touch_down(self, touch):
-        super(SourceCode, self).on_touch_down(touch)
-        y = touch.pos[1]
-        # https://kivy.org/doc/stable/api-kivy.uix.widget.html#kivy.uix.widget.Widget.top
-        if self.y <= y and y <= self.top:  # source_code がクリックされたか
+    def on_touch_up(self, touch):
+        # https://kivy.org/doc/stable/api-kivy.uix.widget.html#kivy.uix.widget.Widget.collide_point
+        if self.collide_point(*touch.pos):  # source_code がクリックされたか
             if touch.button == "right":
                 self._show_cut_copy_paste(
                     touch.pos, kivy.base.EventLoop.window, mode="paste"
                 )
+        return super(SourceCode, self).on_touch_up(touch)
 
 
 class ResultHeader(kivy.uix.boxlayout.BoxLayout):
@@ -119,13 +118,12 @@ class Result(kivy.uix.boxlayout.BoxLayout):
         super(Result, self).__init__(**kwargs)
         self.imagefile_path = ""
 
-    def on_touch_down(self, touch):
-        super(Result, self).on_touch_down(touch)
-        y = touch.pos[1]
-        if self.y <= y and y <= self.top:  # result がクリックされたか
+    def on_touch_up(self, touch):
+        if self.collide_point(*touch.pos):  # result がクリックされたか
             if touch.button == "left":
                 if self.imagefile_path:
                     self.editor.show_image(self.imagefile_path)
+        return super(Result, self).on_touch_up(touch)
 
 
 class Footer(kivy.uix.boxlayout.BoxLayout):
