@@ -25,7 +25,7 @@ Python 3.7.5
 - Navigate to error line.
 - Fix up indent style.
 - Generate HTML from source code with syntax highlight.
-    - You can open it in browser.
+    - Then open it in browser.
 
 ### Keyboard shortcut
 
@@ -33,3 +33,9 @@ Python 3.7.5
 - `Ctrl+S`: Save File.
     - If some file is opened, overwrite it.
 - `Ctrl+B`: Beautify source code.
+
+### NOT implemented
+
+- Syntax highlight for multiline comment.
+- Find/Replace a word.
+- Jump to open/close brace.
