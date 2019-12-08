@@ -63,12 +63,14 @@ class Header(kivy.uix.actionbar.ActionBar):
 class SourceCode(kivy.uix.codeinput.CodeInput):
     editor = kivy.properties.ObjectProperty(None)
 
+    # error_line_num: 1-indexed
     def select_error_line(self, error_line_num):
         if error_line_num == -1:
             return
         lines = self.text.splitlines()
         if len(lines) < error_line_num:
             return
+        self.cursor = (0, error_line_num - 1)
         start = sum([len(line) + 1 for line in lines[: error_line_num - 1]])
         end = sum([len(line) + 1 for line in lines[:error_line_num]]) - 1
         self.select_text(start=start, end=end)
