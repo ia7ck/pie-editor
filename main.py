@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 
+import bisect
+import itertools
 import locale
 import os
 import re
@@ -29,8 +31,7 @@ import asirserver
 import coderunner
 import filemanager
 import outputanalyzer
-from codebeautify.beautifier import AsirSyntaxError
-from codebeautify.beautifier import Beautifier
+from codebeautify.beautifier import AsirSyntaxError, Beautifier
 
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
@@ -72,18 +73,42 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
         end = sum([len(line) + 1 for line in lines[:error_line_num]]) - 1
         self.select_text(start=start, end=end)
 
+    def comment_out(self):
+        c = self.cursor  # keep
+        lines = self.text.splitlines(keepends=True)
+        acc_char_count = [0] + list(itertools.accumulate([len(l) for l in lines]))
+        acc_char_count[-1] += 1
+        f, t = (
+            min(self.selection_from, self.selection_to),
+            max(self.selection_from, self.selection_to),
+        )
+        for i in range(len(lines)):
+            # TODO: use `bisect` module instead
+            if acc_char_count[i] <= f <= t < acc_char_count[i + 1]:
+                if lines[i].strip().startswith("//"):  # uncomment
+                    lines[i] = lines[i].replace("//", "")
+                else:
+                    space = re.search(r"(\s*).*$", lines[i]).group(1)
+                    lines[i] = space + "//" + lines[i].lstrip(" ")
+        self.text = "".join(lines)
+        self.cursor = c  # revert
+
     def keyboard_on_key_down(self, _window, keycode, _text, modifiers):
         e = self.editor
-        if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "enter":
-            e.coderunner.run_source_code()
-            return True  # enter で改行しないために必要
-        if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "s":
-            e.handle_file_save()
-            return True
-        if len(modifiers) == 1 and modifiers[0] == "ctrl" and keycode[1] == "b":
-            e.beautify_source_code()
-            return True
         e.footer.update_line_col_from_cursor(self.cursor_row + 1, self.cursor_col + 1)
+        if len(modifiers) == 1 and modifiers[0] == "ctrl":
+            if keycode[1] == "enter":
+                e.coderunner.run_source_code()
+                return True  # enter で改行しないために必要
+            if keycode[1] == "s":
+                e.handle_file_save()
+                return True
+            if keycode[1] == "b":
+                e.beautify_source_code()
+                return True
+            if keycode[1] == "/":
+                self.comment_out()
+                return True
         # https://kivy.org/doc/stable/examples/gen__demo__kivycatalog__main__py.html
         # https://kivy.org/doc/stable/api-kivy.uix.behaviors.focus.html#kivy.uix.behaviors.focus.FocusBehavior.keyboard_on_key_down
         return super(SourceCode, self).keyboard_on_key_down(
