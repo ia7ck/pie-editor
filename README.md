@@ -33,6 +33,7 @@ Python 3.7.5
 - `Ctrl+S`: Save File.
     - If some file is opened, overwrite it.
 - `Ctrl+B`: Beautify source code.
+- `Ctrl+/`: Comment/Uncomment current line.
 
 ### NOT implemented
 
