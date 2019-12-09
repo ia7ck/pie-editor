@@ -3,6 +3,7 @@
 #:import hex kivy.utils.get_color_from_hex
 #:import os os
 #:import datetime datetime
+#:import root_dir main.root_dir
 
 #:set LABEL_FONT_SIZE 20
 #:set TITLE_FONT_SIZE 24
@@ -59,20 +60,22 @@
         text: "Save"
         on_release: root.editor.handle_file_save()
     ActionGroup:
-      text: ""
+      text: "Actions"
       ActionButton:
         text: "Run"
-        icon: "atlas://data/images/defaulttheme/media-playback-start"
+        icon: os.path.join(root_dir, "./static/play.png")
         on_release: root.editor.coderunner.run_source_code()
       ActionButton:
         text: "Stop"
-        icon: "atlas://data/images/defaulttheme/media-playback-stop"
+        icon: os.path.join(root_dir, "./static/stop.png")
         on_release: root.editor.coderunner.stop_running()
       ActionButton:
         text: "Beautify"
+        icon: os.path.join(root_dir, "./static/code.png")
         on_release: root.editor.beautify_source_code()
       ActionButton:
         text: "to HTML"
+        icon: os.path.join(root_dir, "./static/print.png")
         on_release: root.editor.generate_html()
     ActionGroup:
       text: "Links"

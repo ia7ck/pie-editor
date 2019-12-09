@@ -33,17 +33,19 @@ import filemanager
 import outputanalyzer
 from codebeautify.beautifier import AsirSyntaxError, Beautifier
 
+root_dir = os.path.dirname(__file__)
+
 # https://kivy.org/doc/stable/api-kivy.input.providers.mouse.html#using-multitouch-interaction-with-the-mouse
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
 kivy.core.window.Window.size = (900, 600)
 # https://kivy.org/doc/stable/api-kivy.core.text.html#kivy.core.text.LabelBase.register
 kivy.core.text.LabelBase.register(
     "M+ P Type-1 Regular",
-    os.path.join(os.path.dirname(__file__), "mplus-1p-regular.ttf"),
+    os.path.join(root_dir, "./static/mplus-1p-regular.ttf"),
 )
 kivy.core.text.LabelBase.register(
     "M+ M Type-1 Regular",
-    os.path.join(os.path.dirname(__file__), "mplus-1m-regular.ttf"),
+    os.path.join(root_dir, "./static/mplus-1m-regular.ttf"),
 )
 
 FONT_SIZE = 24  # LABEL_FONT_SIZE in pie.kv
