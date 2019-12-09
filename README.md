@@ -3,20 +3,29 @@ $ python3 -V
 Python 3.7.5
 ```
 
-### How to build and run
+## Dependencies
+
+Craete shared library (dynamic link library) `liba.so`.
 
 1. `$ source /path/to/OpenXM_HOME/rc/dot.bashrc`
 2. `$ ./build.sh`
-    - `liba.so` is created.
-3. `$ pip install --upgrade pip && pip install -r requirements.txt`
-4. `$ python3 main.py`
 
-### Test
+## Install and run
+
+1. `$ pip install --upgrade pip && pip install -e .`
+2. `$ pie`
+
+or
+
+1. `$ pip install --upgrade pip && pip install -r requirements.txt`
+2. `$ python3 main.py`
+
+## Test
 
 - All: `python3 -m unittest discover --start-directory tests`
 - Each file: e.g. `python3 -m unittest tests/test_erroranalyzer.py`
 
-### Support
+## Support
 
 - Replace macros (#define directives).
 - Suspend execution.
@@ -27,7 +36,7 @@ Python 3.7.5
 - Generate HTML from source code with syntax highlight.
     - Then open it in browser.
 
-### Keyboard shortcut
+## Keyboard shortcut
 
 - `Ctrl+Enter`: Run source code.
 - `Ctrl+S`: Save File.
@@ -35,13 +44,13 @@ Python 3.7.5
 - `Ctrl+B`: Beautify source code.
 - `Ctrl+/`: Comment/Uncomment current line.
 
-### NOT implemented
+## NOT implemented
 
 - Syntax highlight for multiline comment.
 - Find/Replace a word.
 - Jump to open/close brace.
 
-### Known issues
+## Known issues
 
 - Under specific environment, cut/copy/paste bubble disappears immediately after appearing.
     - See [#6473](https://github.com/kivy/kivy/issues/6473).

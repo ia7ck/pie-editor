@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import ctypes
+import os
 
 
 # OpenXM/src/ox_toolkit/ox_toolkit.h
@@ -39,7 +40,9 @@ StructOXFILE._fields_ = [
 
 class Server:
     def __init__(self):
-        self.lib = ctypes.cdll.LoadLibrary("./liba.so")
+        self.lib = ctypes.cdll.LoadLibrary(
+            os.path.join(os.path.dirname(__file__), "liba.so")
+        )
 
         self.lib.start.restype = ctypes.POINTER(StructOXFILE)
         self.lib.start.argtypes = None

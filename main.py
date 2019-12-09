@@ -37,8 +37,14 @@ from codebeautify.beautifier import AsirSyntaxError, Beautifier
 kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右クリック時の赤丸を表示しない
 kivy.core.window.Window.size = (900, 600)
 # https://kivy.org/doc/stable/api-kivy.core.text.html#kivy.core.text.LabelBase.register
-kivy.core.text.LabelBase.register("M+ P Type-1 Regular", "./mplus-1p-regular.ttf")
-kivy.core.text.LabelBase.register("M+ M Type-1 Regular", "./mplus-1m-regular.ttf")
+kivy.core.text.LabelBase.register(
+    "M+ P Type-1 Regular",
+    os.path.join(os.path.dirname(__file__), "mplus-1p-regular.ttf"),
+)
+kivy.core.text.LabelBase.register(
+    "M+ M Type-1 Regular",
+    os.path.join(os.path.dirname(__file__), "mplus-1m-regular.ttf"),
+)
 
 FONT_SIZE = 24  # LABEL_FONT_SIZE in pie.kv
 
@@ -84,16 +90,25 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             min(self.selection_from, self.selection_to),
             max(self.selection_from, self.selection_to),
         )
+        num_add_comment = 0
         for i in range(len(lines)):
             # TODO: use `bisect` module instead
-            if acc_char_count[i] <= f <= t < acc_char_count[i + 1]:
+            if (
+                (acc_char_count[i] <= f < acc_char_count[i + 1])
+                or (f <= acc_char_count[i] < t)
+                or (acc_char_count[i] <= t < acc_char_count[i + 1])
+            ):
                 if lines[i].strip().startswith("//"):  # uncomment
                     lines[i] = lines[i].replace("//", "")
+                    num_add_comment -= 1
                 else:
                     space = re.search(r"(\s*).*$", lines[i]).group(1)
                     lines[i] = space + "//" + lines[i].lstrip(" ")
+                    num_add_comment += 1
         self.text = "".join(lines)
         self.cursor = c  # revert
+        if f < t:
+            self.select_text(start=f, end=t + num_add_comment * 2)
 
     def keyboard_on_key_down(self, _window, keycode, _text, modifiers):
         e = self.editor
@@ -202,7 +217,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             self.footer.error_message.text = err.message
 
     def generate_html(self):
-        path = os.path.join(os.environ["HOME"], "output.html")
+        path = os.path.join(os.getcwd(), "output.html")
         current_file_path = self.filemanager.filepath
         if current_file_path:
             path = os.path.splitext(current_file_path)[0] + ".html"
@@ -302,6 +317,10 @@ class Pie(kivy.app.App):
             e.server.shutdown()
 
 
-if __name__ == "__main__":
+def main():
     app = Pie()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

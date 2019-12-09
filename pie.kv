@@ -186,7 +186,7 @@
   FileChooserIconView:
     id: filechooser
     title: "Open File"
-    rootpath: os.environ["HOME"]
+    rootpath: os.getcwd()
     on_submit: root.editor.filemanager.load_file(filechooser.selection)
     # filters: ""
   BoxLayout:
@@ -209,7 +209,7 @@
   FileChooserIconView:
     id: filechooser
     title: "Save File"
-    rootpath: os.environ["HOME"]
+    rootpath: os.getcwd()
     # https://kivy.org/doc/stable/api-kivy.uix.filechooser.html#usage-example
     on_selection: root.filepath.text = self.selection and self.selection[0] or ""
   TextInput:
