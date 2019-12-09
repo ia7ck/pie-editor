@@ -40,3 +40,10 @@ Python 3.7.5
 - Syntax highlight for multiline comment.
 - Find/Replace a word.
 - Jump to open/close brace.
+
+### Known issues
+
+- Under specific environment, cut/copy/paste bubble disappears immediately after appearing.
+    - See [#6473](https://github.com/kivy/kivy/issues/6473).
+    - To fix it, install development version of Kivy: `pip install git+https://github.com/kivy/kivy.git@master`
+        - For more information: [Manually installing Kivy from source](https://kivy.org/doc/stable/installation/installation-linux-venvs.html#installation)
