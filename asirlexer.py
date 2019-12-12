@@ -20,6 +20,7 @@ class AsirLexer(pygments.lexers.c_cpp.CFamilyLexer):
                 r"\b(car|cdr|getopt|newstruct|map|pari|quote|recmap|timer)\b",
                 pygments.token.Name.Builtin,  # functions
             ),
+            pygments.lexer.inherit,
             (
                 r"([a-z][A-Za-z0-9_]*)(\s*)(\()",  # 関数呼び出し
                 pygments.lexer.bygroups(
@@ -33,6 +34,5 @@ class AsirLexer(pygments.lexers.c_cpp.CFamilyLexer):
             (r"\$", pygments.token.Other),
             # http://www.math.kobe-u.ac.jp/OpenXM/Current/doc/asir2000/html-ja/man/man_14.html
             (r"@.(@|\d+|i|pi|e||>|<|>=|<=|==|&&|\|\|)", pygments.token.Name.Builtin),
-            pygments.lexer.inherit,
         ]
     }
