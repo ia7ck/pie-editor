@@ -5,9 +5,15 @@ Python 3.7.5
 
 ## Dependencies
 
-Craete shared library (dynamic link library) `liba.so`.
+Debian ユーザは [install-ja.txt](install-ja.txt) も参考にしてください。
 
-1. `$ source /path/to/OpenXM_HOME/rc/dot.bashrc`
+### OpenXM, Asir
+
+Obtain OpenXM project source code from download section at [project page](http://www.math.kobe-u.ac.jp/OpenXM/index.html). Then build it following this instruction: [link](http://www.math.kobe-u.ac.jp/OpenXM/Current/install-en.txt).
+
+### Craete shared library (dynamic link library)
+
+1. `$ source /some/path/to/OpenXM/rc/dot.bashrc`
 2. `$ ./build.sh`
 
 ## Install and run

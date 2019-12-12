@@ -1,0 +1,46 @@
+Debian (たとえば mathlibre-2019) への pie-editor のインストール.
+
+A. python3-kivy のインストール.
+debian wheezy の python3-kivy package は壊れてるので以下のように
+ppn.launchpad.net/kivy-team から package をダウンロードする.
+(参考 https://kivy.org/doc/stable/installation/installation-linux.html)
+
+[ 以下 # は root で実行 (mathlibre では sudo su - など)]
+1.  /etc/apt/sources.list へ以下の行を加える. python3-kivy package のダウンロード元
+  # deb http://ppa.launchpad.net/kivy-team/kivy/ubuntu xenial main
+
+2.  上記のダウンロード元のホストキーを登録.
+ # apt-get install dirmngr
+ # apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A863D2D6
+
+3. 
+ # apt-get install python3-kivy
+ # apt-get install libsdl2-dev
+
+または 
+ # apt-get upgrade python3-kivy
+ # apt-get upgrade libsdl2-dev
+
+B. openxm をソースからビルド, install.
+[ 以下 $ は user として実行 ]
+1. http://www.openxm.org の Download メニューから openxm-head.tar.gz をダウンロード.  ホームフォルダへ移動.
+2. $ tar xzvf openxm-head.tar.gz
+   $ pushd openxm-head/OpenXM/src
+   $ make configure ; make install
+  (環境によっては途中で tex のエラーで ? が出て止まるので, R [enter] する.)
+   $ cd ../rc ; make ; install openxm ~/bin 
+   $ popd
+  
+3. ~/bin/openxm がサーチパスにはいっているか
+  $ which openxm
+  で確認.
+
+C. 
+1. pie-editor を github から clone
+  $ git clone https://github.com/ia7ck/pie-editor
+2.  python へ dynamic load するための liba.so を作成.
+  $ source ~/openxm-head/OpenXM/rc/dot.bashrc
+  $ cd pie-editor
+  $ ./build.sh
+3. 実行.
+  $ python3 main.py
