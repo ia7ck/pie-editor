@@ -269,7 +269,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.popup.open()
 
     def update_footer(self, filepath):
-        app.title = "Pie -- " + filepath
+        self.app.title = "Pie -- " + filepath
         self.footer.filename.text = os.path.basename(filepath)
 
     def dismiss_popup(self):
