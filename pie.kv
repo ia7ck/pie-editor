@@ -190,7 +190,7 @@
     id: filechooser
     title: "Open File"
     rootpath: os.getcwd()
-    on_submit: root.editor.filemanager.load_file(filechooser.selection)
+    on_submit: root.editor.handle_select_files(filechooser.selection)
     # filters: ""
   BoxLayout:
     size_hint_y: None
@@ -202,7 +202,7 @@
       on_release: root.editor.dismiss_popup()
     Button:
       text: "Open"
-      on_release: root.editor.filemanager.load_file(filechooser.selection)
+      on_release: root.editor.handle_select_files(filechooser.selection)
 
 <FileSaveDialog>:
   orientation: "vertical"
@@ -222,7 +222,7 @@
     size_hint_y: None
     height: self.font_size * 2
     multiline: False
-    on_text_validate: root.editor.filemanager.write_to_file(filechooser.path, self.text)
+    on_text_validate: root.editor.handle_input_filename(filechooser.path, self.text)
     cursor_width: 3
     cursor_color: hex("#404040ff")
     cursor_blink: False
@@ -237,7 +237,7 @@
     Button:
       id: save_button
       text: "Save"
-      on_release: root.editor.filemanager.write_to_file(filechooser.path, filepath.text)
+      on_release: root.editor.handle_input_filename(filechooser.path, filepath.text)
 
 <ImageViewer>:
   orientation: "vertical"

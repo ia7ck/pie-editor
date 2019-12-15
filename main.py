@@ -15,6 +15,7 @@ import kivy.core.clipboard
 import kivy.core.text
 import kivy.core.window
 import kivy.graphics
+import kivy.logger
 import kivy.properties
 import kivy.uix.actionbar
 import kivy.uix.boxlayout
@@ -40,12 +41,10 @@ kivy.config.Config.set("input", "mouse", "mouse,disable_multitouch")  # 右ク�
 kivy.core.window.Window.size = (900, 600)
 # https://kivy.org/doc/stable/api-kivy.core.text.html#kivy.core.text.LabelBase.register
 kivy.core.text.LabelBase.register(
-    "M+ P Type-1 Regular",
-    os.path.join(root_dir, "./static/mplus-1p-regular.ttf"),
+    "M+ P Type-1 Regular", os.path.join(root_dir, "./static/mplus-1p-regular.ttf"),
 )
 kivy.core.text.LabelBase.register(
-    "M+ M Type-1 Regular",
-    os.path.join(root_dir, "./static/mplus-1m-regular.ttf"),
+    "M+ M Type-1 Regular", os.path.join(root_dir, "./static/mplus-1m-regular.ttf"),
 )
 
 FONT_SIZE = 24  # LABEL_FONT_SIZE in pie.kv
@@ -191,12 +190,20 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     result = kivy.properties.ObjectProperty(None)
     # https://kivy.org/doc/stable/guide/lang.html#rule-context
     app = kivy.properties.ObjectProperty(None)
+    # https://kivy.org/doc/stable/guide/events.html#declaration-of-a-property
+    filepath = kivy.properties.StringProperty("")
 
-    def __init__(self, **kwargs):
+    def __init__(self, filepath="", **kwargs):
         super(Editor, self).__init__(**kwargs)
         self.server = None
         self.coderunner = coderunner.CodeRunner(editor=self)
         self.filemanager = filemanager.FileManager(editor=self)
+        # TODO: filemanager.py に移動させる
+        if len(filepath) > 0:
+            try:
+                self.filemanager.load_file(filepath)
+            except OSError as err:
+                kivy.logger.Logger.error(err)
         # https://kivy.org/doc/stable/api-kivy.clock.html#kivy.clock.CyClockBase.create_trigger
         self.clock_event = kivy.clock.Clock.create_trigger(
             lambda _dt: self.coderunner.fetch_result(), 1, interval=True
@@ -220,7 +227,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
     def generate_html(self):
         path = os.path.join(os.getcwd(), "output.html")
-        current_file_path = self.filemanager.filepath
+        current_file_path = self.filepath
         if current_file_path:
             path = os.path.splitext(current_file_path)[0] + ".html"
         with open(path, "w") as f:
@@ -268,17 +275,38 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         )
         self.popup.open()
 
-    def update_footer(self, filepath):
-        self.app.title = "Pie -- " + filepath
-        self.footer.filename.text = os.path.basename(filepath)
-
     def dismiss_popup(self):
         self.popup.dismiss()
 
+    # self.filepath が変更されたら呼ばれる
+    def on_filepath(self, _, path):
+        self.app.title = "Pie -- " + path
+        self.footer.filename.text = os.path.basename(path)
+
+    def handle_select_files(self, filepath_list):
+        if len(filepath_list) == 0:
+            return
+        path = filepath_list[0]
+        try:
+            self.filemanager.load_file(path)
+            self.dismiss_popup()
+        except OSError as err:
+            kivy.logger.Logger.error(err)
+
+    def handle_input_filename(self, dirname, basename):
+        path = os.path.join(dirname, basename)
+        try:
+            self.filemanager.write_to_file(path, self.source_code.text)
+            self.dismiss_popup()
+        except OSError as err:
+            kivy.logger.Logger.error(err)
+
     def handle_file_save(self):  # 上書き or 新規作成
-        fm = self.filemanager
-        if fm.has_file_created():
-            fm.write_to_file(dirname="", filepath=fm.filepath)
+        if self.filepath:
+            try:
+                self.filemanager.write_to_file(self.filepath, self.source_code.text)
+            except OSError as err:
+                kivy.logger.Logger.error(err)
         else:
             self.show_filename_input_form()
 
@@ -292,12 +320,13 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
 
 class Pie(kivy.app.App):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(Pie, self).__init__()
         self.editor = None
+        self.kwargs = kwargs
 
     def build(self):
-        self.editor = Editor()  # ここで作る
+        self.editor = Editor(**self.kwargs)  # ここで作る
         return self.editor
 
     def on_start(self):
@@ -320,7 +349,13 @@ class Pie(kivy.app.App):
 
 
 def main():
-    app = Pie()
+    import sys, os
+
+    if len(sys.argv) == 2:
+        filepath = os.path.join(os.getcwd(), sys.argv[1])
+        app = Pie(filepath=filepath)
+    else:
+        app = Pie()
     app.run()
 
 
