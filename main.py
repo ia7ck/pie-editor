@@ -182,6 +182,14 @@ class Footer(kivy.uix.boxlayout.BoxLayout):
     def update_line_col_from_cursor(self, new_line, new_col):
         self.line_col.text = "Line:{} Col:{}".format(new_line, new_col)
 
+    def inform_unsaved_changes(self):
+        f = self.filename
+        if f.text:
+            f.text = "*" + f.text.lstrip("*")
+
+    def update_filename(self, newname):
+        self.filename.text = newname
+
 
 class Editor(kivy.uix.boxlayout.BoxLayout):
     header = kivy.properties.ObjectProperty(None)
@@ -281,7 +289,6 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
     # self.filepath が変更されたら呼ばれる
     def on_filepath(self, _, path):
         self.app.title = "Pie -- " + path
-        self.footer.filename.text = os.path.basename(path)
 
     def handle_select_files(self, filepath_list):
         if len(filepath_list) == 0:
