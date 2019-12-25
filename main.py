@@ -341,10 +341,10 @@ class Pie(kivy.app.App):
         try:
             e.server = asirserver.Server()
         except OSError as err:
-            print("Asir サーバを起動できませんでした。環境変数 OpenXM_HOME が正しく設定されているか確認してください。")
-            import traceback
-
-            print(traceback.format_exc())
+            kivy.logger.Logger.error(
+                "Asir サーバを起動できませんでした。環境変数 OpenXM_HOME が正しく設定されているか確認してください。"
+            )
+            kivy.logger.Logger.error(err)
             self.stop()
         if e.server:
             e.server.start()
