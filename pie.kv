@@ -256,6 +256,25 @@
     height: self.font_size * 2
     on_release: root.editor.dismiss_popup()
 
+<AppCloseDialog>:
+  orientation: "vertical"
+  CustomLabel:
+    text: "Your changes have not been saved.\nAre you sure you want to close this app?"
+    background_color: hex("#00000000") # 透過
+    halign: "left"
+    valign: "middle"
+  BoxLayout:
+    size_hint_y: None
+    height: btn.font_size * 2
+    orientation: "horizontal"
+    Button:
+      id: btn
+      text: "Yes"
+      on_release: app.stop_app()
+    Button:
+      text: "No"
+      on_release: app.keep_app()
+
 <Label>:
   font_name: "M+ P Type-1 Regular"
 <Popup>:
@@ -266,3 +285,4 @@
   font_size: CODE_FONT_SIZE
 <Button>:
   always_release: True
+  font_size: LABEL_FONT_SIZE

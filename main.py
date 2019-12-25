@@ -326,11 +326,41 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         self.popup.open()
 
 
+class AppCloseDialog(kivy.uix.boxlayout.BoxLayout):
+    pass
+
+
 class Pie(kivy.app.App):
     def __init__(self, **kwargs):
         super(Pie, self).__init__()
         self.editor = None
         self.kwargs = kwargs
+        # https://kivy.org/doc/stable/api-kivy.core.window.html#kivy.core.window.WindowBase.on_request_close
+        kivy.core.window.Window.bind(on_request_close=self.handle_request_close)
+
+    def handle_request_close(self, *args, **kwargs):
+        if kwargs.get("source") == "keyboard":  # Esc が押された
+            return True  # 閉じない
+        e = self.editor
+        path = e.filepath
+        name = e.footer.filename.text
+        if path and name[0] != "*": # 変更なし
+            return False # 閉じる
+        # 新規ファイル or 変更あり
+        self.popup = kivy.uix.popup.Popup(
+            title="Finish editing source code?",
+            size_hint=(0.8, 0.4),
+            content=AppCloseDialog(),
+        )
+        self.popup.open()
+        return True
+
+    def stop_app(self):
+        self.popup.dismiss()
+        self.stop()  # on_stop が 2 回呼ばれる ?
+
+    def keep_app(self):
+        self.popup.dismiss()
 
     def build(self):
         self.editor = Editor(**self.kwargs)  # ここで作る
@@ -351,7 +381,7 @@ class Pie(kivy.app.App):
 
     def on_stop(self):
         e = self.editor
-        if e.server:
+        if e.server and e.server.server:  # ...
             e.server.shutdown()
 
 
