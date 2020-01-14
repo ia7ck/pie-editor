@@ -344,8 +344,8 @@ class Pie(kivy.app.App):
         e = self.editor
         path = e.filepath
         name = e.footer.filename.text
-        if path and name[0] != "*": # 変更なし
-            return False # 閉じる
+        if path and name[0] != "*":  # 変更なし
+            return False  # 閉じる
         # 新規ファイル or 変更あり
         self.popup = kivy.uix.popup.Popup(
             title="Finish editing source code?",
