@@ -74,6 +74,10 @@
         icon: os.path.join(root_dir, "./static/code.png")
         on_release: root.editor.beautify_source_code()
       ActionButton:
+        text: "Search"
+        icon: os.path.join(root_dir, "./static/search.png")
+        on_release: root.editor.show_search_text_input_form()
+      ActionButton:
         text: "to HTML"
         icon: os.path.join(root_dir, "./static/print.png")
         on_release: root.editor.generate_html()
@@ -239,6 +243,37 @@
       id: save_button
       text: "Save"
       on_release: root.editor.handle_input_filename(filechooser.path, filepath.text)
+
+<SearchTextDialog>:
+  orientation: "vertical"
+  search_result: search_result
+  TextInput:
+    text: ""
+    size_hint_y: None
+    height: self.font_size * 2 
+    multiline: False
+    on_text_validate: root.editor.handle_input_search_text(self.text)
+    cursor_width: 3
+    cursor_color: hex("#404040ff")
+    cursor_blink: False
+    focus: True
+  # https://kivy.org/doc/stable/api-kivy.uix.scrollview.html
+  ScrollView:
+    do_scroll_y: True
+    BoxLayout:
+      id: search_result
+      orientation: "vertical"
+      size_hint_y: None
+      height: self.minimum_height
+
+<SearchResultButton>:
+  text: ""
+  size_hint_y: None
+  text_size: self.size
+  halign: "left"
+  valign: "middle"
+  padding_x: 5
+  markup: True
 
 <ImageViewer>:
   orientation: "vertical"

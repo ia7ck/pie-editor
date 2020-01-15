@@ -58,6 +58,28 @@ class FileSaveDialog(kivy.uix.boxlayout.BoxLayout):
     editor = kivy.properties.ObjectProperty(None)
 
 
+class SearchTextDialog(kivy.uix.boxlayout.BoxLayout):
+    editor = kivy.properties.ObjectProperty(None)
+    search_result = kivy.properties.ObjectProperty(None)
+
+    def clear_result(self):
+        self.search_result.clear_widgets()
+
+    def update_search_result(self, text, match_lines):
+        for i, ln in enumerate(match_lines):
+            btn_text = ln.replace(text, "[u]" + text + "[/u]")
+            self.search_result.add_widget(SearchResultButton(text=btn_text))
+            if i >= 20:
+                self.search_result.add_widget(
+                    SearchResultButton(text="... ... and more")
+                )
+                break
+
+
+class SearchResultButton(kivy.uix.button.Button):
+    text = kivy.properties.StringProperty("")
+
+
 class ImageViewer(kivy.uix.boxlayout.BoxLayout):
     source = kivy.properties.StringProperty("")
     editor = kivy.properties.ObjectProperty(None)
@@ -127,6 +149,9 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
             if keycode[1] == "/":
                 self.comment_out()
                 return True
+            if keycode[1] == "f":
+                e.show_search_text_input_form()
+                return True
         # https://kivy.org/doc/stable/examples/gen__demo__kivycatalog__main__py.html
         # https://kivy.org/doc/stable/api-kivy.uix.behaviors.focus.html#kivy.uix.behaviors.focus.FocusBehavior.keyboard_on_key_down
         return super(SourceCode, self).keyboard_on_key_down(
@@ -147,6 +172,9 @@ class SourceCode(kivy.uix.codeinput.CodeInput):
                     touch.pos, kivy.base.EventLoop.window, mode="paste"
                 )
         return super(SourceCode, self).on_touch_up(touch)
+
+    def search_text(self, text):
+        return [ln.strip() for ln in self.text.splitlines() if text in ln]
 
 
 class ResultHeader(kivy.uix.boxlayout.BoxLayout):
@@ -270,6 +298,23 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
         else:
             r.text = res
 
+    def show_search_text_input_form(self):
+        self.popup = kivy.uix.popup.Popup(
+            title="Search Text",
+            size_hint=(0.8, 0.8),
+            content=SearchTextDialog(editor=self),
+        )
+        self.popup.open()
+
+    def handle_input_search_text(self, text):
+        dialog = self.popup.content
+        dialog.clear_result
+        match_lines = self.source_code.search_text(text.strip())
+        dialog.update_search_result(text, match_lines)
+
+    def dismiss_popup(self):
+        self.popup.dismiss()
+
     # ファイル関係
     def show_files(self):
         self.popup = kivy.uix.popup.Popup(
@@ -282,9 +327,6 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
             title="Save File", size_hint=(0.8, 0.8), content=FileSaveDialog(editor=self)
         )
         self.popup.open()
-
-    def dismiss_popup(self):
-        self.popup.dismiss()
 
     # self.filepath が変更されたら呼ばれる
     def on_filepath(self, _, path):
