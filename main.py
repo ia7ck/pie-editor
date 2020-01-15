@@ -308,7 +308,7 @@ class Editor(kivy.uix.boxlayout.BoxLayout):
 
     def handle_input_search_text(self, text):
         dialog = self.popup.content
-        dialog.clear_result
+        dialog.clear_result()
         match_lines = self.source_code.search_text(text.strip())
         dialog.update_search_result(text, match_lines)
 
