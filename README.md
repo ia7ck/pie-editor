@@ -49,11 +49,11 @@ or
     - If some file is opened, overwrite it.
 - `Ctrl+B`: Beautify source code.
 - `Ctrl+/`: Comment/Uncomment current line.
+- `Ctrl+F`: Search Text
 
 ## NOT implemented
 
 - Syntax highlight for multiline comment.
-- Find/Replace a word.
 - Jump to open/close brace.
 
 ## Known issues
